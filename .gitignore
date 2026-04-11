@@ -15,3 +15,6 @@ review/review_state.json
 .vscode/
 .idea/
 *.swp
+
+# Git worktrees (isolated workspaces, not source)
+.worktrees/
