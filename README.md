@@ -18,7 +18,7 @@ cp -r read insights note review query lint ~/.claude/skills/
 cp SCHEMA.md AGENTS.md /path/to/your/vault/
 ```
 
-> 💡 完整的哲学立场（为什么"人必须在 loop 里"，以及"为谁积累"的经济学论证），见长文《实现人的四个未来化之知识 memo 化》👉 _[文章链接待补]_
+> 💡 完整的哲学立场（为什么"人必须在 loop 里"，以及"为谁积累"的经济学论证），短版中英对照见 [`docs/philosophy.md`](./docs/philosophy.md)。长文《实现人的四个未来化之知识 memo 化》正在撰写，发布后在此补中文链接。
 
 ### Karpathy LLM Wiki → Knowledge MEMO 实现对照表
 
