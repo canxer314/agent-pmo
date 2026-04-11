@@ -26,9 +26,13 @@ arguments:
 
 ## 定位
 
+`/note` 是 vault 的**唯一写入通道**（SCHEMA.md §2）。上游的 ingest 对话由 `/read` / `/insights` 完成，下游的 capture 与本地记忆由 `/log` / `/journal` 承接。本表横向对比这五个角色，方便理解"哪类事情该走哪个 skill"：
+
 | Skill | 职责 | 输出 |
 |-------|------|------|
-| `/note` | 知识沉淀 — 研究摘要 + 原子卡片 | Obsidian 卡片组 |
+| `/read` | 深度阅读 — 学术论文结构化分析 | 对话中的分析报告 → 喂给 `/note` |
+| `/insights` | 商业洞察 — 文章模式提取 | 对话中的洞察报告 → 喂给 `/note` |
+| **`/note`** | **知识沉淀 — 研究摘要 + 原子卡片（dual-proposal）** | **Obsidian 卡片组（唯一写入通道）** |
 | `/log` | 记忆捕获 — 决策、偏好、洞察 | L2 long-term-memory.md |
 | `/journal` | 进度记录 — 做了什么 | 本地 journal + Obsidian journal |
 
