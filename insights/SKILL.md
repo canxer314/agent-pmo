@@ -46,7 +46,7 @@ arguments:
 |---------|---------|
 | **URL** | `WebFetch` 抓取并解析 |
 | **本地文件** (`.pdf`, `.md`, `.txt`, `.html`) | `Read` 工具读取 |
-| **Obsidian 关键词** | `mcp__obsidian__search_notes` → `mcp__obsidian__read_note` |
+| **Obsidian 关键词** | `obsidian search:context query="..."` → `obsidian read path="..."`（CLI 不可用时回退 MCP） |
 | **Heptabase 关键词** | `mcp__heptabase__semantic_search_objects` → `mcp__heptabase__get_object` |
 | **粘贴文本** | 直接分析 |
 | **未提供** | 询问用户来源 |
@@ -248,7 +248,7 @@ Cards/Insights/{文章标题简称} {YYYY-MM-DD}.md
 
 #### 5b. Tag 系统
 
-使用 `mcp__obsidian__manage_tags` 添加标签，规则如下：
+使用 `obsidian property:set` 添加标签（仅当 Obsidian 应用未运行且 CLI 报 connection refused 时回退 `mcp__obsidian__manage_tags`），规则如下：
 
 **固定标签**（每篇必加）：
 - `category/insights`
@@ -268,9 +268,11 @@ Cards/Insights/{文章标题简称} {YYYY-MM-DD}.md
 
 #### 5c. 执行步骤
 
-1. 用 `mcp__obsidian__write_note` 将完整分析报告写入上述路径
-2. 用 `mcp__obsidian__manage_tags` 添加所有标签
-3. 用 `mcp__obsidian__write_note` 追加当日 Journal（`Journal/{YYYY-MM-DD}.md`，mode=append），格式：
+1. `obsidian create path="Cards/Insights/{标题}.md" content="..." overwrite`（含 frontmatter tags）
+2. 如 frontmatter 未含标签：`obsidian property:set path="..." name="tags" value="..." type=list`
+3. `obsidian append path="Journal/{YYYY-MM-DD}.md" content="..."` 追加当日 Journal，格式：
+
+> **必须使用 CLI**。仅当 Obsidian 应用未运行且 CLI 报 connection refused 时，才回退 MCP。
 
 ```markdown
 - 📊 **商业洞察**：[[{卡片标题}]] — {一句话核心启发}
