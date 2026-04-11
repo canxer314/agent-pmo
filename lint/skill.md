@@ -134,6 +134,6 @@ obsidian create path="Cards/Vault Health Report YYYY-MM-DD.md" content="..." ove
 ## Cron 模式
 
 被 cron 调用时（非用户手动触发），行为与手动相同，但：
-- 报告自动写入 `Journal/Vault Health Report YYYY-MM-DD.md`（而非 Cards/）
+- 报告自动写入 `Journal/Vault Health Report YYYY-MM-DD.md`（而非 Cards/），避免每日例行报告在 Cards/ 堆积产生噪声
 - 不输出到对话（无用户在场）
-- 安全写入照常执行（补 unread status）
+- **不做任何"顺手修复"**：Step 3 的 lint 写入边界（只能写健康报告、不能补标签 / 不能改 / 不能建其他 Card）在 cron 模式下**完全适用**，和手动模式无差别
