@@ -1,14 +1,8 @@
 ---
 tags:
-  - category/insights
-  - industry/ai
-  - industry/finance
-  - focus/general
-  - source/memo
-  - topic/ai-bubble
-  - topic/self-improving-ai
-  - topic/labor-displacement
-  - topic/value-investing
+  - type/insight
+  - domain/ai-industry
+  - domain/value-investing
 date: 2026-03-01
 author: Howard Marks
 source: Oaktree Capital
