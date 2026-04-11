@@ -39,7 +39,7 @@ cp SCHEMA.md AGENTS.md /path/to/your/vault/
 | Skill | Layer | Role | Output |
 |-------|-------|------|--------|
 | [`/read`](./read/) | Flywheel | Deep reading of papers, articles, PDFs | Structured analysis report |
-| [`/insights`](./insights/) | Flywheel | Extract patterns from business content | Actionable insights → Obsidian |
+| [`/insights`](./insights/) | Flywheel | Extract patterns from business content | Actionable insights report |
 | [`/note`](./note/) | Flywheel | Distill conversation into Map + Stones | Summary + atomic cards (dual-proposal) |
 | [`/review`](./review/) | Flywheel | FSRS-6 spaced repetition | Quiz + mastery tracking |
 | [`/query`](./query/) | Governance | Query vault knowledge via MOC + search | Grounded answer with sources |
@@ -113,7 +113,7 @@ Use in any Claude Code session:
 模拟专家读者过程：结构扫描 → 论点追溯 → 方法评估 → 逻辑批判。支持 URL / PDF / Obsidian 笔记 / 纯文本，`quick`（5 分钟概览）或 `deep`（完整分析）两种模式。输出一份结构化报告，可直接喂给 `/note`。
 
 ### `/insights` — See What Others Miss
-像分析师一样读商业内容：表面信息 → 深层逻辑 → 可迁移模式。每个洞察有三层（证据 → 逻辑 → 可迁移模式），优先收集反直觉、非显然的发现。自动存入 Obsidian。
+像分析师一样读商业内容：表面信息 → 深层逻辑 → 可迁移模式。每个洞察有三层（证据 → 逻辑 → 可迁移模式），优先收集反直觉、非显然的发现。输出一份结构化洞察报告，可直接喂给 `/note` 沉淀。
 
 ### `/note` — Crystallize Knowledge (Dual-Proposal)
 把对话压缩成两层：**Map**（叙事摘要，保留推理链）+ **Stones**（独立原子卡片，每张一个 idea）。**人在 loop 的关键强制点** —— 不自动写卡，而是提出两个提议：(1) Wikilink 建议，你逐条确认；(2) Atomic Card 建议，你挑选。
