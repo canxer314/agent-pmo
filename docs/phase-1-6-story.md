@@ -20,7 +20,7 @@ The author — a Claude Code power user whose domains are cognitive neuroscience
 
 ## The three problems that v1 didn't solve
 
-By early 2026, as the vault crossed ~1,500 cards, three silent failure modes became impossible to ignore:
+By early 2026, as the vault grew past the thousand-card mark, three silent failure modes became impossible to ignore:
 
 ### Problem 1: No shared schema → cards drifted
 
@@ -51,7 +51,7 @@ What started as "I'll just add a `/query` skill this weekend" became a full Phas
 ### Phase 1-3 (Day 1): Baseline + Cleanup
 
 - Git-init the vault (it had been living dangerously)
-- Health scan: 1,547 cards, 2,103 wikilinks, 47 broken links, 31 orphan cards (zero backlinks)
+- Full health scan of Cards / Clippings / wikilink integrity — documenting how many broken links and orphan cards had been accumulating invisibly
 - Root directory cleanup: moved stray screenshots, drafts, and inbox files into proper directories
 
 ### Phase 4 (Day 2 morning): Readwise decompression
@@ -84,17 +84,15 @@ Crucially: `type/atomic` became the *sole* identification standard for atomic ca
 
 ## The Karpathy coincidence
 
-Three days after the overhaul finished, Andrej Karpathy posted his `llm-wiki.md` gist on Twitter. It proposed:
+The overhaul and Karpathy's `llm-wiki.md` gist happened in the same week. The gist appeared on Twitter in early April 2026; the author's overhaul was already mid-flight, driven by the three vault problems above, and finished a few days later. The author read the gist while the overhaul was still in progress, paused, and compared it against the `SCHEMA.md` draft already taking shape. The two documents described nearly the same architecture, in different words:
 
 - Three layers: **Raw Sources / The Wiki / The Schema**
 - Three operations: **Ingest / Query / Lint**
 - A schema/rules layer the LLM reads before acting
 
-The author read the gist, paused, and re-read `SCHEMA.md`. The two documents described nearly the same architecture, in different words.
+This repo is the result of noticing that convergence and shipping fast. The vault itself isn't in the repo (it's full of personal content). But the *shape* of the vault — the SCHEMA, the 6 skills, the permission matrix, the fork-me templates, the demo gallery of four real cards — all of that is here.
 
-This repo is the result of noticing that coincidence and shipping fast. The vault itself isn't in the repo (it's full of personal content). But the *shape* of the vault — the SCHEMA, the 6 skills, the permission matrix, the fork-me templates, the demo gallery of four real cards — all of that is here.
-
-**The author didn't set out to implement Karpathy's idea.** The overhaul was internal, driven by three concrete problems (drift, broken links, couldn't-find-things). The alignment with Karpathy's LLM Wiki vision is a side-effect of both efforts trying to solve the same underlying problem: *how do you maintain a growing knowledge base with a LLM as your collaborator?*
+**The author didn't set out to implement Karpathy's idea.** The overhaul was internal, driven by three concrete problems (drift, broken links, couldn't-find-things) that had been growing for weeks. The alignment with Karpathy's LLM Wiki vision is a side-effect of both efforts trying to solve the same underlying problem: *how do you maintain a growing knowledge base with a LLM as your collaborator?* The gist helped the author name things (Ingest / Query / Lint is a cleaner vocabulary than what the author had been using). The gist did not cause the overhaul.
 
 ---
 

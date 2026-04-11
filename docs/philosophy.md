@@ -43,7 +43,7 @@ Gary Tan's gbrain will think about how ideas grow (because he runs a startup acc
 
 ## The Karpathy coincidence, and the two deliberate differences
 
-Knowledge MEMO's 3-layer architecture (Schema / Flywheel / Governance) turned out to align almost perfectly with Andrej Karpathy's `llm-wiki.md` gist (Raw Sources / Wiki / Schema + Ingest/Query/Lint operations). The author did not set out to implement Karpathy's idea — the overhaul that produced this structure happened three days *before* the gist was posted. See [`phase-1-6-story.md`](./phase-1-6-story.md) for the timeline.
+Knowledge MEMO's 3-layer architecture (Schema / Flywheel / Governance) turned out to align almost perfectly with Andrej Karpathy's `llm-wiki.md` gist (Raw Sources / Wiki / Schema + Ingest/Query/Lint operations). The author did not set out to implement Karpathy's idea — the overhaul that produced this structure was already mid-flight when the gist was posted, driven by three concrete vault problems that had been growing for weeks (see [`phase-1-6-story.md`](./phase-1-6-story.md) for the timeline). The alignment is convergent, not derivative.
 
 But there are **two deliberate divergences**, both spelled out below. They're not bug-fixes or style disagreements. They're value choices — and if you disagree with either, you should probably fork this repo hard and remove the relevant pieces.
 
