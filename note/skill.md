@@ -115,6 +115,19 @@ arguments:
 
 /note 同时提出两类建议，用户分别确认。
 
+#### Step 3a: 同名冲突预检（强制）
+
+在列出任何 Atomic Card 提议之前，对摘要中每个【概念】候选执行一次存在性检测：
+
+```bash
+obsidian read path="Cards/{概念名}.md"
+```
+
+- **读不到**（CLI 报 not found / MCP 返回空）→ 候选保留在提议 2 "Atomic Card 建议" 列表
+- **读到内容** → 候选**自动转入**提议 1 "Wikilink 建议" 列表，标注 `(同名卡已存在)`，作为链接候选而非建卡候选
+
+**为什么强制这一步**：Step 5 使用 `obsidian create ... overwrite`。如果没有 Step 3a 的分流，用户在 Step 3 双提议里选"建立【多巴胺】卡"时，如果 vault 里已有 `Cards/多巴胺.md`，Step 5 会**静默覆盖**老卡的正文、source 回链和 mastery 标签。这条预检把这类冲突在"用户决策点"就解决掉。
+
 #### 提议 1：Wikilink 建议（链接到已有 Card）
 
 在摘要完成后，CC 搜索 vault 中已有 Cards，找到与本次内容相关的：
@@ -235,7 +248,24 @@ date: YYYY-MM-DD
 
 > **工具优先级**：CLI 优先，MCP 仅在 Obsidian 未运行时回退使用。
 
-**一次性存入所有内容：**
+**写入前的 race-condition 安全网**：Step 3a 已经把"已存在的同名概念"分流到 Wikilink 提议，Step 5 在正常路径下碰到的都应该是新概念。但从 Step 3a 到 Step 5 之间 vault 可能被其他流程（另一个 /note、手动编辑、Obsidian 同步）改动过。写入每张原子卡**之前**再做一次存在性检测：
+
+```bash
+obsidian read path="Cards/{概念名}.md"
+```
+
+- **读不到** → 按原计划 `obsidian create` 写入
+- **读到内容** → **停下，不覆盖**，向用户展示冲突并请求决策：
+
+```
+⚠️ 冲突：Cards/{概念名}.md 在 Step 3a 之后出现。选择：
+  - 覆盖：舍弃旧内容写新卡（老正文、source 回链、mastery 标签全部丢失）
+  - 合并：在旧卡正文末尾追加本次新内容，保留旧 frontmatter
+  - 跳过：本次不写这张，摘要里保留【】标记但不生成 [[]] 链接
+请回复 "覆盖"/"合并"/"跳过"
+```
+
+**存入顺序**（正常路径，所有预检通过后）：
 
 1. **先存原子卡片**：`obsidian create path="Cards/{概念名}.md" content="..." overwrite`（文件名 = 概念名，不含【】和陈述句）
 2. **再存研究摘要**（已包含 `[[]]` 双链）：`obsidian create path="Cards/{研究摘要标题}.md" content="..." overwrite`
