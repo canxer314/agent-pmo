@@ -89,7 +89,7 @@ def fm_has_atomic_tag(fm_text):
 def insert_atomic_into_fm(fm_text):
     """Return a new fm_text with `type/atomic` added to tags.
 
-    Handles three cases:
+    Handles four cases:
       (1) No `tags:` field at all → append `tags:\\n  - type/atomic` at end
       (2) Block-style tags:
             tags:
@@ -98,6 +98,12 @@ def insert_atomic_into_fm(fm_text):
           → append `  - type/atomic` after the last tag item
       (3) Inline-style tags: `tags: [a, b]`
           → rewrite as `tags: [a, b, type/atomic]`
+      (4) Scalar-style tags: `tags: domain/test`
+          → rewrite as a block list so the original value is preserved AND
+            type/atomic is added:
+              tags:
+                - domain/test
+                - type/atomic
     """
     if fm_text is None:
         return "tags:\n  - type/atomic\n"
@@ -119,8 +125,11 @@ def insert_atomic_into_fm(fm_text):
         return fm_text + suffix + "tags:\n  - type/atomic\n"
 
     tags_line = lines[tags_line_idx]
-    # Check if it's inline form: "tags: [a, b]" or "tags: []"
+    # Check the text after "tags:" to decide between inline / scalar / block.
     after_colon = tags_line.split(":", 1)[1].strip().rstrip("\n").rstrip("\r")
+    # Preserve the original line ending for any rewrite we produce.
+    newline = "\r\n" if tags_line.endswith("\r\n") else "\n"
+
     if after_colon.startswith("[") and after_colon.endswith("]"):
         # Case (3): inline form
         inner = after_colon[1:-1].strip()
@@ -128,11 +137,20 @@ def insert_atomic_into_fm(fm_text):
             new_inner = inner + ", type/atomic"
         else:
             new_inner = "type/atomic"
-        # Preserve line ending of the original tags_line
-        newline = "\n"
-        if tags_line.endswith("\r\n"):
-            newline = "\r\n"
         lines[tags_line_idx] = f"tags: [{new_inner}]{newline}"
+        return "".join(lines)
+
+    if after_colon:
+        # Case (4): scalar form — `tags: domain/test`. Rewrite the single
+        # `tags:` line into a block list so the original value survives AND
+        # type/atomic is added as a valid sibling item. Without this branch
+        # the block-form code below would append `  - type/atomic` underneath
+        # the scalar, producing invalid YAML.
+        lines[tags_line_idx] = (
+            f"tags:{newline}"
+            f"  - {after_colon}{newline}"
+            f"  - type/atomic{newline}"
+        )
         return "".join(lines)
 
     # Case (2): block form. Find last contiguous "  - ..." item after tags:
