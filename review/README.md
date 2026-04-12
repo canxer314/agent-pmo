@@ -1,12 +1,12 @@
 # /review — FSRS-6 Spaced Repetition
 
-Never forget what you learn. The `/review` skill brings [FSRS-6](https://github.com/open-spaced-repetition/py-fsrs) spaced repetition directly into your Claude Code workflow.
+Never forget what you learn. The `/review` skill brings [FSRS-6](https://github.com/open-spaced-repetition/py-fsrs) spaced repetition into your Claude Code or Codex workflow.
 
 ## What It Does
 
-When you type `/review`, the skill:
+When you run `/review` in Claude Code, or explicitly invoke `$review` in Codex, the skill:
 
-1. **Scans Heptabase** — discovers atomic cards created by `/note` (or manually)
+1. **Scans Obsidian** — discovers atomic cards created by `/note` (or manually)
 2. **Schedules reviews** — FSRS-6 algorithm determines which cards are due today
 3. **Quizzes you** — two modes: recall (title shown, describe from memory) or question (AI-generated question from content)
 4. **Evaluates answers** — AI rates your response: Again / Hard / Good / Easy
@@ -14,12 +14,24 @@ When you type `/review`, the skill:
 
 ## Usage
 
-```
+**Claude Code**
+
+```text
 /review                     # scan + review (default)
 /review --mode=scan         # discover new cards only
 /review --mode=stats        # show statistics
 /review --topic=dopamine    # filter by topic
 /review --limit=5           # max 5 cards this session
+```
+
+**Codex**
+
+```text
+$review                     # scan + review (default)
+$review --mode=scan         # discover new cards only
+$review --mode=stats        # show statistics
+$review --topic=dopamine    # filter by topic
+$review --limit=5           # max 5 cards this session
 ```
 
 ## How FSRS-6 Works
@@ -40,7 +52,12 @@ Rating → next interval (approximate, for a card with stability = 10 days):
 
 ## State File
 
-Review progress is stored locally in `~/.claude/skills/review/state.json`. This file tracks:
+Review progress is stored locally next to the installed skill:
+
+- Claude Code: `~/.claude/skills/review/review_state.json`
+- Codex: `~/.agents/skills/review/review_state.json`
+
+This file tracks:
 - All registered cards (title, content snippet, FSRS state)
 - Review history per card
 - Session summaries
@@ -65,13 +82,7 @@ python3 fsrs_engine.py <state_file> <command> [args]
 
 ## Card Discovery
 
-The skill finds atomic cards via Heptabase semantic search, then filters by these heuristics:
-- Title ≤ 50 characters
-- Title does NOT contain "Research Summary"
-- Body 50–3000 characters
-- Body contains `【】` brackets or `**bold**`
-
-Cards created by `/note` automatically match these criteria.
+The skill discovers atomic cards from Obsidian by searching for the `type/atomic` tag. Cards created by `/note` automatically match this criterion.
 
 ## Integration with `/note`
 
@@ -80,8 +91,8 @@ The complete knowledge flywheel:
 ```
 Conversation
     ↓  /note
-Heptabase: Research Summary + Atomic Cards
-    ↓  /review (scans Heptabase)
+Obsidian: Summary + Atomic Cards
+    ↓  /review (scans Obsidian)
 FSRS scheduling → daily quiz sessions
     ↓
 Long-term retention
@@ -89,6 +100,6 @@ Long-term retention
 
 ## Requirements
 
-- Claude Code with Heptabase MCP configured
-- Python 3.7+ (for `fsrs_engine.py`)
-- To use a different knowledge tool, see [CONTRIBUTING.md](../CONTRIBUTING.md)
+- Claude Code or Codex
+- Obsidian 1.12.4+ (CLI preferred, MCP fallback is fine)
+- Python 3.9+ (for `fsrs_engine.py`)

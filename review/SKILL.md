@@ -32,12 +32,32 @@ arguments:
 
 ## 文件路径
 
-- **FSRS 引擎**: `~/.claude/skills/review/scripts/fsrs_engine.py`
-- **状态文件**: `${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}`
+- **Claude Code skill 目录**: `$HOME/.claude/skills/review/`
+- **Codex skill 目录**: `$HOME/.agents/skills/review/`
+- **FSRS 引擎**:
+  - Claude Code: `$HOME/.claude/skills/review/scripts/fsrs_engine.py`
+  - Codex: `$HOME/.agents/skills/review/scripts/fsrs_engine.py`
+- **状态文件默认位置**:
+  - Claude Code: `${KM_REVIEW_STATE_PATH:-$HOME/.claude/skills/review/review_state.json}`
+  - Codex: `${KM_REVIEW_STATE_PATH:-$HOME/.agents/skills/review/review_state.json}`
+
+## 运行时约定（Claude Code / Codex）
+
+下文所有命令里的两个占位按当前运行时替换：
+
+- `<FSRS_ENGINE_PATH>`
+  - Claude Code: `$HOME/.claude/skills/review/scripts/fsrs_engine.py`
+  - Codex: `$HOME/.agents/skills/review/scripts/fsrs_engine.py`
+- `<REVIEW_STATE_PATH>`
+  - 默认就是对应 skill 目录下的 `review_state.json`
+  - 如需自定义，优先用 `KM_REVIEW_STATE_PATH`
 
 ## 配置：状态文件路径
 
-默认状态文件位置：`~/.claude/skills/review/review_state.json`（和 skill 同目录，开箱即用）。
+默认状态文件位置与 installed skill 同目录：
+
+- Claude Code: `~/.claude/skills/review/review_state.json`
+- Codex: `~/.agents/skills/review/review_state.json`
 
 如需自定义（例如跨机器同步、多 vault 隔离、测试隔离），通过环境变量覆盖：
 
@@ -48,6 +68,8 @@ export KM_REVIEW_STATE_PATH=/path/to/your/review_state.json
 本 skill 内所有 `fsrs_engine.py` 的调用都会展开这个变量，自动使用自定义路径。不 export 时使用默认路径。
 
 ## Usage
+
+Claude Code 通常直接写 `/review`。Codex 可显式写 `$review`（或用自然语言让 Codex 按 skill 描述隐式匹配）。
 
 ```
 /review                     # 扫描 + 复习（默认）
@@ -66,8 +88,7 @@ export KM_REVIEW_STATE_PATH=/path/to/your/review_state.json
 #### 1a. 获取当前状态
 
 ```bash
-python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
-  "${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}" stats
+python3 <FSRS_ENGINE_PATH> <REVIEW_STATE_PATH> stats
 ```
 
 从返回的 `known_card_ids` 得知已注册卡片。
@@ -93,8 +114,7 @@ obsidian search query="type/atomic"
 对新卡片使用 CLI 逐个读取完整内容（仅当 Obsidian 未运行时回退 `mcp__obsidian__read_multiple_notes`），然后批量注册：
 
 ```bash
-echo '<JSON>' | python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
-  "${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}" bulk_register
+echo '<JSON>' | python3 <FSRS_ENGINE_PATH> <REVIEW_STATE_PATH> bulk_register
 ```
 
 输入 JSON 格式：`[{"id": "Cards/{title}.md", "title": "...", "content": "..."}]`
@@ -119,8 +139,7 @@ obsidian property:set path="Cards/{title}.md" name="tags" value="{existing_tags}
 ### Step 2: 获取待复习卡片
 
 ```bash
-python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
-  "${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}" due --limit <limit> --new_limit <new_limit>
+python3 <FSRS_ENGINE_PATH> <REVIEW_STATE_PATH> due --limit <limit> --new_limit <new_limit>
 ```
 
 **混合比例制**：默认 `new_limit = limit // 2`（50% 新卡 + 50% 旧卡）。引擎会先取 new_limit 张新卡，剩余名额给 learning/review 旧卡。任一类不够时自动补给另一类。
@@ -175,9 +194,7 @@ Kent Berridge 的研究区分了大脑中哪两套独立的奖励系统？
 
 1. 调用 retire 命令：
 ```bash
-python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
-  "${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}" retire \
-  --id <card_id>
+python3 <FSRS_ENGINE_PATH> <REVIEW_STATE_PATH> retire --id <card_id>
 ```
 
 2. 更新 Obsidian 标签为 `mastery/retired`：
@@ -253,9 +270,7 @@ obsidian property:set path="Cards/{title}.md" name="tags" value="{updated_tags_w
 
 记录评分：
 ```bash
-python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
-  "${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}" record \
-  --id <card_id> --rating 3
+python3 <FSRS_ENGINE_PATH> <REVIEW_STATE_PATH> record --id <card_id> --rating 3
 ```
 
 **如果用户对评分有异议**（如"这个应该是 Hard"），用用户覆盖的评分重新调用 record。
@@ -308,15 +323,13 @@ python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
 
 ```bash
 echo '{"date":"2026-02-20","cards_reviewed":8,"ratings":{"Again":1,"Hard":2,"Good":4,"Easy":1},"avg_retrievability":0.82}' | \
-  python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
-  "${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}" record_session
+  python3 <FSRS_ENGINE_PATH> <REVIEW_STATE_PATH> record_session
 ```
 
 ### Step 5: mode=stats 输出
 
 ```bash
-python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
-  "${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}" stats
+python3 <FSRS_ENGINE_PATH> <REVIEW_STATE_PATH> stats
 ```
 
 格式化输出：
@@ -346,7 +359,7 @@ Again: XX | Hard: XX | Good: XX | Easy: XX
 2. **评分可覆盖** — 用户说"这个应该是 Hard"时，用用户的评分
 3. **一张一张来** — 不要批量展示，每次只展示一张卡片的问题
 4. **展示完整内容** — 评分后必须展示卡片原文，帮助用户巩固
-5. **状态文件路径固定** — 始终使用 `${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}`
+5. **状态文件路径固定** — 始终使用 `<REVIEW_STATE_PATH>`（Claude Code / Codex 按运行时替换；如有覆盖，优先 `KM_REVIEW_STATE_PATH`）
 
 ## Notes
 
