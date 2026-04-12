@@ -1,23 +1,35 @@
 # /note — Atomic Knowledge Capture
 
-Turn any Claude Code conversation into a durable knowledge artifact.
+Turn a Claude Code or Codex conversation into durable Obsidian cards.
 
 ## What It Does
 
-When you type `/note`, the skill:
+When you run `/note` in Claude Code, or explicitly invoke `$note` in Codex, the skill:
 
-1. **Scans the conversation** — identifies the research arc, key findings, and quotable knowledge points
-2. **Writes a Research Summary** — a narrative "map" card that preserves the full reasoning chain
-3. **Extracts Atomic Cards** — standalone "stone" cards, one concept each, designed for spaced repetition
-4. **Saves to Heptabase** — all cards saved via MCP in one shot
-5. **Asks for confirmation** — shows you the card list before saving (can skip with "just save it")
+1. **Scans the conversation** — identifies the research arc, key findings, and reusable knowledge points
+2. **Drafts a Research Summary** — a narrative "map" card that preserves the reasoning chain
+3. **Proposes wikilinks** — suggests where the new summary should link to existing cards
+4. **Proposes Atomic Cards** — suggests standalone "stone" cards for concepts worth retaining
+5. **Writes only approved cards** — saves the summary and any accepted atomic cards to Obsidian through the `/note` dual-proposal flow
+
+`/note` is the vault's only write path. Upstream skills like `/read` and `/insights` generate analysis in the conversation; `/note` is where persistence happens.
 
 ## Usage
 
-```
+**Claude Code**
+
+```text
 /note                    # save everything from this conversation
 /note --topic=dopamine   # limit to a specific topic
 /note --scope=last       # only the most recent discussion
+```
+
+**Codex**
+
+```text
+$note                    # save everything from this conversation
+$note --topic=dopamine   # limit to a specific topic
+$note --scope=last       # only the most recent discussion
 ```
 
 ## Output Format
@@ -25,33 +37,38 @@ When you type `/note`, the skill:
 ### Research Summary (Map)
 
 ```markdown
-# [Topic] — Research Summary
+# [Topic] — 研究摘要
 
-> Date: 2026-01-15 | Source: article analysis
+> 日期：2026-01-15 | 来源：article analysis
 
-## Background
+## 研究背景
 ...
 
-## Key Findings
+## 核心发现
 ### [Sub-topic]
 ...
 
-## Key Conclusions
+## 关键结论
 1. ...
 
-## Related Concepts
-【concept-1】【concept-2】
+## 延伸问题
+...
 ```
 
 ### Atomic Card (Stone)
 
 ```markdown
+---
+tags:
+  - type/atomic
+  - domain/neuroscience
+date: 2026-01-15
+---
+
 # 【Dopamine】encodes motivation, not pleasure
 
 Wolfram Schultz's landmark experiments showed that dopamine neurons fire in
 anticipation of reward, not at reward delivery...
-
-> Reference: conversation 2026-01-15
 ```
 
 ## Why Map + Stones?
@@ -62,25 +79,33 @@ anticipation of reward, not at reward delivery...
 
 The `/review` skill reads stones, not maps — this is intentional.
 
+## Dual-Proposal Flow
+
+`/note` does not silently dump cards into your vault.
+
+It proposes two things separately:
+
+1. **Wikilinks** — which existing cards should be linked instead of creating duplicates
+2. **Atomic cards** — which new concepts are worth promoting into standalone reviewable cards
+
+You confirm what gets written. This is the human-in-the-loop checkpoint that keeps the vault aligned with your own knowledge graph.
+
 ## Linking Convention
 
-- `【Key Term】` — marks concepts that become their own stone cards (bidirectional linking)
+- `【Key Term】` — marks concepts that may deserve their own atomic cards
 - `**bold**` — marks core conclusions within a card
 - Combined: `**【extinction learning】is the neuroscientific basis of memory reconsolidation**`
 
-These conventions make cards discoverable by `/review`'s search heuristics.
+These markers help `/note` surface good card candidates, but `/review` ultimately discovers cards via the `type/atomic` tag.
 
 ## Integration with `/review`
 
-Cards created by `/note` are automatically discovered by `/review` via Heptabase semantic search. The filter:
-- Title ≤ 50 chars
-- Title does NOT contain "Research Summary"
-- Contains `【】` or `**` markers
-- Body 50–3000 chars
+Accepted atomic cards are written with the `type/atomic` tag. `/review` scans Obsidian for that tag and registers those cards into FSRS.
 
-As long as your atomic cards follow the format, `/review` will find and schedule them.
+As long as the accepted card lands in Obsidian with `type/atomic`, `/review` will find and schedule it.
 
 ## Requirements
 
-- Claude Code with Heptabase MCP configured
-- To use a different knowledge tool, see [CONTRIBUTING.md](../CONTRIBUTING.md)
+- Claude Code or Codex
+- Obsidian 1.12.4+ (CLI preferred, MCP fallback is fine)
+- To use a different knowledge backend, see [CONTRIBUTING.md](../CONTRIBUTING.md)
