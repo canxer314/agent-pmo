@@ -14,7 +14,12 @@
 
 ```bash
 # 一行装好 SCHEMA / Ingest / Query / Lint / Retain
-cp -r read insights note review query lint ~/.claude/skills/
+# Claude Code:
+cp -r read insights note review query lint "$HOME/.claude/skills/"
+
+# Codex:
+cp -r read insights note review query lint "$HOME/.agents/skills/"
+
 cp SCHEMA.md AGENTS.md /path/to/your/vault/
 ```
 
@@ -39,7 +44,7 @@ cp SCHEMA.md AGENTS.md /path/to/your/vault/
 | Skill | Layer | Role | Output |
 |-------|-------|------|--------|
 | [`/read`](./read/) | Flywheel | Deep reading of papers, articles, PDFs | Structured analysis report |
-| [`/insights`](./insights/) | Flywheel | Extract patterns from business content | Actionable insights report |
+| [`/insights`](./insights/) | Flywheel | Extract patterns from business content | Actionable insights report → `/note` |
 | [`/note`](./note/) | Flywheel | Distill conversation into Map + Stones | Summary + atomic cards (dual-proposal) |
 | [`/review`](./review/) | Flywheel | FSRS-6 spaced repetition | Quiz + mastery tracking |
 | [`/query`](./query/) | Governance | Query vault knowledge via MOC + search | Grounded answer with sources |
@@ -70,29 +75,84 @@ cp SCHEMA.md AGENTS.md /path/to/your/vault/
 
 ## Quick Start
 
+### 0. Pick your agent runtime
+
+Knowledge MEMO currently supports both:
+
+- **Claude Code** — install skills into `~/.claude/skills/`
+- **Codex** — install skills into `~/.agents/skills/` (Codex official user-level skill directory)
+
+`SCHEMA.md` and `AGENTS.md` are shared. For Codex, launch it from your vault root (or a subdirectory inside that vault) so `AGENTS.md` is in scope. If you use Claude Code, add a tiny vault-level `CLAUDE.md` that tells Claude Code to follow the rules in `AGENTS.md`.
+
+### 1. Clone
+
 ```bash
-# 1. Clone
 git clone https://github.com/owenliang60-ship-it/knowledge-mgmt.git
 cd knowledge-mgmt
+```
 
-# 2. Install the six skills
-cp -r read insights note review query lint ~/.claude/skills/
+### 2. Install the six skills into your agent runtime
 
-# 3. Install SCHEMA + AGENTS to your Obsidian vault root
+**Claude Code**
+
+```bash
+mkdir -p "$HOME/.claude/skills"
+cp -r read insights note review query lint "$HOME/.claude/skills/"
+```
+
+**Codex**
+
+```bash
+mkdir -p "$HOME/.agents/skills"
+cp -r read insights note review query lint "$HOME/.agents/skills/"
+```
+
+### 3. Install SCHEMA + AGENTS to your Obsidian vault root
+
+```bash
 cp SCHEMA.md AGENTS.md /path/to/your/obsidian/vault/
+```
 
-# (Optional) 4. Install card templates
+If you use **Claude Code**, add a bridge file once:
+
+```bash
+cat > /path/to/your/obsidian/vault/CLAUDE.md <<'EOF'
+Read AGENTS.md before operating this vault.
+EOF
+```
+
+### 4. (Optional) Install card templates
+
+```bash
 cp -r templates /path/to/your/obsidian/vault/
 ```
 
-Use in any Claude Code session:
+### 5. Do the fastest possible first run
+
+If you want the shortest path from “clone” to “I saw this work”, follow [`docs/first-15-minutes.md`](./docs/first-15-minutes.md). It is written for both Claude Code and Codex and aims for one concrete success in under 15 minutes.
+
+Invoke the same workflow in either runtime:
+
+**Claude Code**
 
 ```
 /read https://arxiv.org/abs/...     # deep-read a paper
+/insights <url-or-pasted-text>      # analyze a business/source article
 /note                               # distill this conversation
 /query "what do I know about X?"    # ask your vault
 /lint                               # weekly health check
 /review                             # today's spaced repetition
+```
+
+**Codex** (explicit skill invocation; natural-language prompting also works)
+
+```
+$read https://arxiv.org/abs/...     # deep-read a paper
+$insights <url-or-pasted-text>      # analyze a business/source article
+$note                               # distill this conversation
+$query "what do I know about X?"    # ask your vault
+$lint                               # weekly health check
+$review                             # today's spaced repetition
 ```
 
 ---
@@ -113,7 +173,7 @@ Use in any Claude Code session:
 模拟专家读者过程：结构扫描 → 论点追溯 → 方法评估 → 逻辑批判。支持 URL / PDF / Obsidian 笔记 / 纯文本，`quick`（5 分钟概览）或 `deep`（完整分析）两种模式。输出一份结构化报告，可直接喂给 `/note`。
 
 ### `/insights` — See What Others Miss
-像分析师一样读商业内容：表面信息 → 深层逻辑 → 可迁移模式。每个洞察有三层（证据 → 逻辑 → 可迁移模式），优先收集反直觉、非显然的发现。输出一份结构化洞察报告，可直接喂给 `/note` 沉淀。
+像分析师一样读商业内容：表面信息 → 深层逻辑 → 可迁移模式。每个洞察有三层（证据 → 逻辑 → 可迁移模式），优先收集反直觉、非显然的发现。`/insights` 本身不写 vault；它输出一份结构化洞察报告，再交给 `/note` 走双提议沉淀。
 
 ### `/note` — Crystallize Knowledge (Dual-Proposal)
 把对话压缩成两层：**Map**（叙事摘要，保留推理链）+ **Stones**（独立原子卡片，每张一个 idea）。**人在 loop 的关键强制点** —— 不自动写卡，而是提出两个提议：(1) Wikilink 建议，你逐条确认；(2) Atomic Card 建议，你挑选。
@@ -157,7 +217,8 @@ python3 review/scripts/migrate_v1_to_v2.py /path/to/your/vault
 
 ## Prerequisites
 
-- **[Claude Code](https://docs.anthropic.com/claude-code)** — Anthropic's CLI for Claude（本 repo 的 skills 设计给 Claude Code 用）
+- **[Claude Code](https://docs.anthropic.com/claude-code)** — Anthropic's CLI for Claude
+- **Codex** — OpenAI Codex / Codex desktop，custom skills 默认安装到 `$HOME/.agents/skills/`
 - **[Obsidian 1.12.4+](https://obsidian.md/)** — 首选 `obsidian` CLI；或者任意 Obsidian MCP server 作为 fallback
 - **Python 3.9+** — `/review` 的 FSRS-6 引擎（stdlib only，无任何第三方依赖）
 

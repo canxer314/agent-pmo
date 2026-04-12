@@ -1,10 +1,16 @@
 # Upgrading from v1 to v2
 
-> **TL;DR**: Run the migration script first, then copy the new skills.
+> **TL;DR**: Run the migration script first, then copy the new skills into your agent runtime.
 >
 > ```bash
 > python3 review/scripts/migrate_v1_to_v2.py /path/to/your/obsidian/vault
-> cp -r read insights note review query lint ~/.claude/skills/
+>
+> # Claude Code
+> cp -r read insights note review query lint "$HOME/.claude/skills/"
+>
+> # Codex
+> cp -r read insights note review query lint "$HOME/.agents/skills/"
+>
 > cp SCHEMA.md AGENTS.md /path/to/your/vault/
 > ```
 
@@ -65,17 +71,35 @@ python3 review/scripts/migrate_v1_to_v2.py /path/to/your/obsidian/vault
 
 ### 2. Install v2 skills
 
+**Claude Code**
+
 ```bash
-cp -r read insights note review query lint ~/.claude/skills/
+cp -r read insights note review query lint "$HOME/.claude/skills/"
 ```
 
-Note: v2 adds two new skill directories (`query`, `lint`). You may want to back up your `~/.claude/skills/` first if you have custom modifications.
+**Codex**
+
+```bash
+cp -r read insights note review query lint "$HOME/.agents/skills/"
+```
+
+Note: v2 adds two new skill directories (`query`, `lint`). You may want to back up your skill directory first if you have custom modifications.
 
 ### 3. Install SCHEMA and AGENTS at your vault root
 
 ```bash
 cp SCHEMA.md AGENTS.md /path/to/your/obsidian/vault/
 ```
+
+If you use **Claude Code**, also add a small `CLAUDE.md` bridge so the same vault rules are visible there:
+
+```bash
+cat > /path/to/your/obsidian/vault/CLAUDE.md <<'EOF'
+Read AGENTS.md before operating this vault.
+EOF
+```
+
+If you use **Codex**, launch it from your vault root (or a subdirectory inside that vault) so the copied `AGENTS.md` is visible to the runtime.
 
 **Then customize them** for your domain. The author's versions are samples from neuroscience / investing / consciousness / molecular biology. You almost certainly need different Card types, a different tag scheme, or a different permission matrix. See [`CONTRIBUTING.md`](../CONTRIBUTING.md) § "Fork, Don't Consume".
 
@@ -89,7 +113,12 @@ Templates are reference — not authority. Expect to rewrite them to match how y
 
 ### 5. (Optional) Configure state file path
 
-By default, `/review` stores FSRS state at `~/.claude/skills/review/review_state.json`. If you want to put it elsewhere (e.g., in a cloud-synced directory to share across machines), export the env var:
+By default, `/review` stores FSRS state next to the installed skill:
+
+- Claude Code: `~/.claude/skills/review/review_state.json`
+- Codex: `~/.agents/skills/review/review_state.json`
+
+If you want to put it elsewhere (e.g., in a cloud-synced directory to share across machines), export the env var:
 
 ```bash
 # Add to your shell profile (.zshrc / .bashrc)
@@ -102,8 +131,16 @@ All `/review` calls will use that path automatically.
 
 Run a scan to confirm your old cards are detected:
 
+**Claude Code**
+
 ```
 /review --mode=scan
+```
+
+**Codex**
+
+```
+$review --mode=scan
 ```
 
 You should see your migrated cards being registered into FSRS. If the count is zero or much lower than expected, the migration didn't reach them — rerun with `--dry-run` on your vault to see which files were skipped.
@@ -117,7 +154,12 @@ If anything breaks, every v1 file is still at the `v1.0.0` git tag:
 ```bash
 # Clone a fresh copy of v1 into a separate directory
 git clone --branch v1.0.0 https://github.com/owenliang60-ship-it/knowledge-mgmt.git ~/knowledge-mgmt-v1
-cp -r ~/knowledge-mgmt-v1/{read,insights,note,review} ~/.claude/skills/
+
+# Claude Code
+cp -r ~/knowledge-mgmt-v1/{read,insights,note,review} "$HOME/.claude/skills/"
+
+# Codex
+cp -r ~/knowledge-mgmt-v1/{read,insights,note,review} "$HOME/.agents/skills/"
 ```
 
 Note that v2 added `query/` and `lint/` — after rollback you won't have them, but the 4 original skills go back to v1 behavior exactly.
