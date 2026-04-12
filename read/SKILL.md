@@ -49,7 +49,7 @@ arguments:
 |---------|---------|
 | **URL** | 使用 `WebFetch` 抓取并解析 |
 | **本地文件路径** (`.pdf`, `.md`, `.txt`) | 使用 `Read` 工具读取 |
-| **Obsidian 关键词** | 用 `mcp__obsidian__search_notes` 搜索，`mcp__obsidian__read_note` 读取 |
+| **Obsidian 关键词** | `obsidian search:context query="..."` 搜索，`obsidian read path="..."` 读取（CLI 不可用时回退 MCP） |
 | **粘贴的文本** | 直接分析对话中的文本 |
 | **未提供** | 询问用户来源 |
 

@@ -1,6 +1,6 @@
 ---
 name: note
-description: 将对话中的研究内容整理为研究摘要 + 原子化笔记卡片，存入Obsidian。摘要是地图，卡片是石头。对专有名词和关键概念用加粗和【】标记，便于双链。当用户说"note"、"做笔记"、"存笔记"、"拆卡片"、"原子笔记"、"存到ob"、"记到obsidian"时触发。
+description: 将对话中的研究内容整理为研究摘要 + 原子化笔记卡片，存入Obsidian。摘要是地图，卡片是石头。对专有名词和关键概念用加粗和【】标记，便于双链。同时提议 wikilink（链接已有 Card）和 atomic card（创建新复习卡片），更新 MOC 索引，流转 Clipping 状态。当用户说"note"、"做笔记"、"存笔记"、"拆卡片"、"原子笔记"、"存到ob"、"记到obsidian"时触发。
 invocation: user
 arguments:
   - name: topic
@@ -26,9 +26,13 @@ arguments:
 
 ## 定位
 
+`/note` 是 vault 的**唯一写入通道**（SCHEMA.md §2）。上游的 ingest 对话由 `/read` / `/insights` 完成，下游的 capture 与本地记忆由 `/log` / `/journal` 承接。本表横向对比这五个角色，方便理解"哪类事情该走哪个 skill"：
+
 | Skill | 职责 | 输出 |
 |-------|------|------|
-| `/note` | 知识沉淀 — 研究摘要 + 原子卡片 | Obsidian 卡片组 |
+| `/read` | 深度阅读 — 学术论文结构化分析 | 对话中的分析报告 → 喂给 `/note` |
+| `/insights` | 商业洞察 — 文章模式提取 | 对话中的洞察报告 → 喂给 `/note` |
+| **`/note`** | **知识沉淀 — 研究摘要 + 原子卡片（dual-proposal）** | **Obsidian 卡片组（唯一写入通道）** |
 | `/log` | 记忆捕获 — 决策、偏好、洞察 | L2 long-term-memory.md |
 | `/journal` | 进度记录 — 做了什么 | 本地 journal + Obsidian journal |
 
@@ -111,14 +115,53 @@ arguments:
 
 **写好后直接展示完整摘要给用户阅读。**
 
-### Step 3: 用户选择哪些概念值得做原子卡片
+### Step 3: 双提议 — Wikilink + Atomic Card
+
+/note 同时提出两类建议，用户分别确认。
+
+#### Step 3a: 同名冲突预检（强制）
+
+在列出任何 Atomic Card 提议之前，对摘要中每个【概念】候选执行一次存在性检测：
+
+```bash
+obsidian read path="Cards/{概念名}.md"
+```
+
+- **读不到**（CLI 报 not found / MCP 返回空）→ 候选保留在提议 2 "Atomic Card 建议" 列表
+- **读到内容** → 候选**自动转入**提议 1 "Wikilink 建议" 列表，标注 `(同名卡已存在)`，作为链接候选而非建卡候选
+
+**为什么强制这一步**：Step 5 使用 `obsidian create ... overwrite`。如果没有 Step 3a 的分流，用户在 Step 3 双提议里选"建立【多巴胺】卡"时，如果 vault 里已有 `Cards/多巴胺.md`，Step 5 会**静默覆盖**老卡的正文、source 回链和 mastery 标签。这条预检把这类冲突在"用户决策点"就解决掉。
+
+#### 提议 1：Wikilink 建议（链接到已有 Card）
+
+在摘要完成后，CC 搜索 vault 中已有 Cards，找到与本次内容相关的：
+
+```
+obsidian search query="关键概念1"
+obsidian search query="关键概念2"
+...
+```
+
+列出建议：
+
+```
+📎 Wikilink 建议（链接到已有 Card）：
+
+1. [[已有Card名A]] — 与本次讨论的 XX 相关
+2. [[已有Card名B]] — 涉及相同领域
+3. [[新概念C]] — vault 中无此卡，建议建空链标记知识缺口
+
+请回复编号（如 1,2）确认要链接哪些，或"跳过"
+```
+
+#### 提议 2：Atomic Card 建议（创建新复习卡片）
 
 从摘要中提取所有【】标记的概念，列成编号清单供用户挑选：
 
 ```
-摘要中共有 N 个候选概念，请选择哪些值得创建原子卡片：
+🧠 Atomic Card 建议（创建新卡片用于复习）：
 
-1. 【概念A】— [一句话说明为什么值得独立成卡]
+1. 【概念A】— [一句话说明为什么值得独立成卡] (推荐)
 2. 【概念B】— [一句话]
 3. 【概念C】— [一句话]
 ...
@@ -127,6 +170,8 @@ arguments:
 ```
 
 **CC 可以给出推荐**（如在编号后标注"推荐"），但最终由用户决定。
+
+**两个提议可以合并在一条消息中展示，用户一次性回复。**
 
 **提取优先级（供推荐参考，高→低）：**
 
@@ -151,21 +196,35 @@ arguments:
 
 #### 4a: 为选中的概念创建原子卡片
 
+**命名规则：**
+- **文件名 = 概念名**：`Cards/间歇断食.md`、`Cards/HIIT.md` — 与摘要中 `[[间歇断食]]`、`[[HIIT]]` 完全匹配，确保双链可达
+
 每张卡片结构：
 
 ```markdown
-# [卡片标题 — 陈述句，含【关键词】，20字以内]
+---
+title: "概念名"
+source: "[[研究摘要Card名]]"
+tags:
+  - type/atomic
+  - domain/{领域}
+date: YYYY-MM-DD
+---
+# 概念名 — 陈述句描述（≤50字）
 
 [正文：1-3 段，50~3000字，说清这一个概念。正文中必须使用【】标记专有名词、**加粗**标记核心结论。]
 
 > 参考：[来源]
 ```
 
-**格式硬性要求（确保 `/review` 可发现）：**
-- **标题必须含【关键词】** — 这是原子卡片的唯一识别标准，`/review` 靠标题中的【】判断是否为原子卡片
-- 标题 ≤ 50 字
+**格式硬性要求：**
+- **`type/atomic` 标签是原子卡片的唯一识别标准** — `/review` 靠此标签发现待复习卡片
+- **文件名 = 概念名** — 与摘要中 `[[概念名]]` 一致，确保 Obsidian 双链直接解析
+- **`source` 字段** 回链研究摘要，保持溯源链
+- H1 标题 ≤ 50 字
 - 正文 50~3000 字，含至少一处【】或 `**` 标记
-- 标题不含"研究摘要"（这是地图卡片的标识）
+- H1 标题不含"研究摘要"（这是地图卡片的标识）
+- 【】在正文中仍作为专有名词标记使用（写作规范），但不再是识别原子卡片的标准
 
 **原子化判断标准：**
 - 能脱离上下文独立理解？ → 粒度正确
@@ -175,25 +234,44 @@ arguments:
 #### 4b: 在研究摘要中添加 Obsidian 双链
 
 对摘要正文进行双链替换：
-- **用户选中的概念**：`【概念A】` → `[[概念A]]`（真正的 Obsidian wiki link，指向对应原子卡片）
+- **用户选中的 Atomic 概念**：`【概念A】` → `[[概念A]]`（指向新建的原子卡片）
+- **用户确认的 Wikilink**：在摘要中相关位置插入 `[[已有Card名]]`（指向 vault 中已有 Card）
+- **用户确认的空链**：插入 `[[新概念]]`（紫色，标记知识缺口）
 - **未选中的概念**：保留 `【概念A】` 不变（纯视觉标记，无链接）
 - 如果同一概念在摘要中出现多次，**全部替换**为 `[[]]`
 
-同时在摘要末尾添加"相关概念"section，只列出有对应原子卡片的概念：
+同时在摘要末尾添加"相关概念"section：
 
 ```markdown
 ## 相关概念
 
-[[概念1]] [[概念2]] [[概念3]]...
+[[新建原子卡片1]] [[新建原子卡片2]] [[已有Card1]] [[已有Card2]]
 ```
 
 ### Step 5: 存入 Obsidian
 
 > **工具优先级**：CLI 优先，MCP 仅在 Obsidian 未运行时回退使用。
 
-**一次性存入所有内容：**
+**写入前的 race-condition 安全网**：Step 3a 已经把"已存在的同名概念"分流到 Wikilink 提议，Step 5 在正常路径下碰到的都应该是新概念。但从 Step 3a 到 Step 5 之间 vault 可能被其他流程（另一个 /note、手动编辑、Obsidian 同步）改动过。写入每张原子卡**之前**再做一次存在性检测：
 
-1. **先存原子卡片**：`obsidian create path="Cards/{卡片标题}.md" content="..." overwrite`
+```bash
+obsidian read path="Cards/{概念名}.md"
+```
+
+- **读不到** → 按原计划 `obsidian create` 写入
+- **读到内容** → **停下，不覆盖**，向用户展示冲突并请求决策：
+
+```
+⚠️ 冲突：Cards/{概念名}.md 在 Step 3a 之后出现。选择：
+  - 覆盖：舍弃旧内容写新卡（老正文、source 回链、mastery 标签全部丢失）
+  - 合并：在旧卡正文末尾追加本次新内容，保留旧 frontmatter
+  - 跳过：本次不写这张，摘要里保留【】标记但不生成 [[]] 链接
+请回复 "覆盖"/"合并"/"跳过"
+```
+
+**存入顺序**（正常路径，所有预检通过后）：
+
+1. **先存原子卡片**：`obsidian create path="Cards/{概念名}.md" content="..." overwrite`（文件名 = 概念名，不含【】和陈述句）
 2. **再存研究摘要**（已包含 `[[]]` 双链）：`obsidian create path="Cards/{研究摘要标题}.md" content="..." overwrite`
 
 先存卡片再存摘要，确保摘要中的 `[[]]` 链接在存入时目标卡片已存在。
@@ -215,19 +293,48 @@ arguments:
 
 领域推断：从研究主题自动判断，同一批卡片共享领域标签。可多标签。不确定时用最贴切的自由词（如 `domain/neuroscience`, `domain/ai`, `domain/finance`, `domain/consciousness`）。
 
+### Step 5c: Clipping 移至已研究
+
+**仅当本次 /note 来源于特定 Clipping 时执行。** 纯对话产生的 /note 跳过此步。
+
+判断方法：如果对话中有通过 /read 等 skill 读取 Clippings/ 下的文件，则该 Clipping 是来源。
+
+```bash
+obsidian move path="Clippings/{原文文件名}.md" to="Clippings/已研究/{原文文件名}.md"
+```
+
+### Step 5d: MOC 索引自动更新
+
+CC 自主执行，不需要用户确认：
+
+1. 从新 Card 的 `domain/` 标签确定所属 MOC
+2. 读取对应 MOC 文件（如 `Cards/MOC-Neuroscience.md`）
+3. 将新 Card 添加到对应 section（按 type 分区）
+4. 如果 MOC 不存在，自动创建
+
+```bash
+# 读取 MOC
+obsidian read path="Cards/MOC-{Domain}.md"
+# 追加新条目（或创建新 MOC）
+obsidian append path="Cards/MOC-{Domain}.md" content="- [[新Card名]]"
+```
+
 ### Step 6: 输出确认
 
 ```
 ---
-已存入 Obsidian: 1 张摘要 + N 张原子卡片
+已存入 Obsidian: 1 张摘要 + N 张原子卡片 + M 个 wikilink
 
 📄 [摘要标题]（含 N 个 [[双链]]）
 
+🧠 原子卡片：
 1. ✓ [卡片标题1]
 2. ✓ [卡片标题2]
-...
 
-双链索引：[[概念1]] [[概念2]] [[概念3]]...
+📎 Wikilink：[[已有Card1]] [[已有Card2]]
+
+📋 状态：[Clipping名] → 已研究/（如适用）
+📑 MOC：已更新 MOC-{Domain}
 ---
 ```
 

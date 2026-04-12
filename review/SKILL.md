@@ -33,7 +33,19 @@ arguments:
 ## 文件路径
 
 - **FSRS 引擎**: `~/.claude/skills/review/scripts/fsrs_engine.py`
-- **状态文件**: `~/CC workspace/Research/.claude/review_state.json`
+- **状态文件**: `${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}`
+
+## 配置：状态文件路径
+
+默认状态文件位置：`~/.claude/skills/review/review_state.json`（和 skill 同目录，开箱即用）。
+
+如需自定义（例如跨机器同步、多 vault 隔离、测试隔离），通过环境变量覆盖：
+
+```bash
+export KM_REVIEW_STATE_PATH=/path/to/your/review_state.json
+```
+
+本 skill 内所有 `fsrs_engine.py` 的调用都会展开这个变量，自动使用自定义路径。不 export 时使用默认路径。
 
 ## Usage
 
@@ -55,20 +67,20 @@ arguments:
 
 ```bash
 python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
-  "~/CC workspace/Research/.claude/review_state.json" stats
+  "${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}" stats
 ```
 
 从返回的 `known_card_ids` 得知已注册卡片。
 
 #### 1b. 列出 Cards/ 目录发现新卡片
 
-**唯一识别标准：文件名含【】= 原子卡片。**
+**唯一识别标准：frontmatter 含 `type/atomic` 标签 = 原子卡片。**
 
 ```
-obsidian files folder="Cards"
+obsidian search query="type/atomic"
 ```
 
-从返回的文件名列表中，过滤出文件名含 `【` 的文件 = 原子卡片候选。
+从返回结果中，过滤出标签含 `type/atomic` 的文件 = 原子卡片候选。
 
 如果用户指定了 topic，进一步过滤：文件名或后续读取的内容中包含 topic 关键词。
 
@@ -78,11 +90,11 @@ obsidian files folder="Cards"
 
 #### 1d. 注册新卡片
 
-对新卡片分批调用 `mcp__obsidian__read_multiple_notes`（每批 ≤ 10 个，批量读取允许使用 MCP）获取完整内容，然后批量注册：
+对新卡片使用 CLI 逐个读取完整内容（仅当 Obsidian 未运行时回退 `mcp__obsidian__read_multiple_notes`），然后批量注册：
 
 ```bash
 echo '<JSON>' | python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
-  "~/CC workspace/Research/.claude/review_state.json" bulk_register
+  "${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}" bulk_register
 ```
 
 输入 JSON 格式：`[{"id": "Cards/{title}.md", "title": "...", "content": "..."}]`
@@ -108,8 +120,10 @@ obsidian property:set path="Cards/{title}.md" name="tags" value="{existing_tags}
 
 ```bash
 python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
-  "~/CC workspace/Research/.claude/review_state.json" due --limit <limit>
+  "${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}" due --limit <limit> --new_limit <new_limit>
 ```
+
+**混合比例制**：默认 `new_limit = limit // 2`（50% 新卡 + 50% 旧卡）。引擎会先取 new_limit 张新卡，剩余名额给 learning/review 旧卡。任一类不够时自动补给另一类。
 
 - 如果 0 张到期 → 显示"今天没有待复习的卡片"+ 下次复习日期 → 结束
 - 如果 > 0 → 进入复习会话
@@ -162,7 +176,7 @@ Kent Berridge 的研究区分了大脑中哪两套独立的奖励系统？
 1. 调用 retire 命令：
 ```bash
 python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
-  "~/CC workspace/Research/.claude/review_state.json" retire \
+  "${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}" retire \
   --id <card_id>
 ```
 
@@ -214,10 +228,33 @@ obsidian property:set path="Cards/{title}.md" name="tags" value="{updated_tags_w
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
+**Again/Hard 助记强化**：当评分为 Again (1) 或 Hard (2) 时，在展示卡片完整内容之后，额外生成一段**助记内容**帮助用户加深理解：
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 助记强化
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[根据卡片内容，选择以下一种或多种方式帮助记忆：]
+- **生活类比**：用日常经验类比抽象概念
+- **具体例子**：举一个具体、生动的实例
+- **对比记忆**：和容易混淆的概念做对比（什么是、什么不是）
+- **因果链条**：用"因为A→所以B→导致C"串联核心逻辑
+- **一句话浓缩**：把核心要点压缩为一句记忆钩子
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+助记内容要求：
+- 基于卡片原文，不编造新知识
+- 优先选择用户最可能"啊哈"的角度
+- 简洁有力，不超过 5 行
+- Good/Easy 评分不生成（用户已掌握，无需额外辅助）
+
 记录评分：
 ```bash
 python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
-  "~/CC workspace/Research/.claude/review_state.json" record \
+  "${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}" record \
   --id <card_id> --rating 3
 ```
 
@@ -272,14 +309,14 @@ python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
 ```bash
 echo '{"date":"2026-02-20","cards_reviewed":8,"ratings":{"Again":1,"Hard":2,"Good":4,"Easy":1},"avg_retrievability":0.82}' | \
   python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
-  "~/CC workspace/Research/.claude/review_state.json" record_session
+  "${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}" record_session
 ```
 
 ### Step 5: mode=stats 输出
 
 ```bash
 python3 ~/.claude/skills/review/scripts/fsrs_engine.py \
-  "~/CC workspace/Research/.claude/review_state.json" stats
+  "${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}" stats
 ```
 
 格式化输出：
@@ -309,7 +346,7 @@ Again: XX | Hard: XX | Good: XX | Easy: XX
 2. **评分可覆盖** — 用户说"这个应该是 Hard"时，用用户的评分
 3. **一张一张来** — 不要批量展示，每次只展示一张卡片的问题
 4. **展示完整内容** — 评分后必须展示卡片原文，帮助用户巩固
-5. **状态文件路径固定** — 始终使用 `~/CC workspace/Research/.claude/review_state.json`
+5. **状态文件路径固定** — 始终使用 `${KM_REVIEW_STATE_PATH:-~/.claude/skills/review/review_state.json}`
 
 ## Notes
 

@@ -8,7 +8,7 @@ Usage:
     python3 fsrs_engine.py <state_file> <command> [args]
 
 Commands:
-    due              --limit N              Up to N due cards, sorted by urgency
+    due              --limit N [--new_limit M]  Mixed new/review cards (default 50/50)
     record           --id ID --rating 1-4   Record review result
     register         --id ID --title T --content C   Register one card
     bulk_register                           Register cards from stdin JSON
@@ -208,21 +208,29 @@ def cmd_retire(state, card_id):
     return {"status": "retired", "id": card_id, "title": card["title"]}
 
 
-def cmd_due(state, limit):
-    """Return up to `limit` due cards sorted by urgency (lowest R first)."""
+def cmd_due(state, limit, new_limit=None):
+    """Return up to `limit` due cards with mixed new/review ratio.
+
+    new_limit: max new cards to include (default: limit // 2).
+    Remaining slots filled by learning/review cards. If either pool
+    is too small, the other pool gets the leftover slots.
+    """
+    if new_limit is None:
+        new_limit = limit // 2
+
     today = date.today().isoformat()
     w = state["params"]["w"]
     w20 = w[20] if len(w) > 20 else 0.5
-    due_cards = []
+
+    new_cards = []
+    review_cards = []
 
     for cid, card in state["cards"].items():
-        # Skip retired cards
         if card["state"] == "retired":
             continue
 
-        # New cards are always "due"
         if card["state"] == "new":
-            due_cards.append({
+            new_cards.append({
                 "id": cid,
                 "title": card["title"],
                 "state": card["state"],
@@ -235,20 +243,17 @@ def cmd_due(state, limit):
             })
             continue
 
-        # Check if due
         if card["due_date"] > today:
             continue
 
-        # Compute current retrievability
         if card["last_review"]:
             elapsed = (date.today() - date.fromisoformat(card["last_review"])).days
         else:
             elapsed = 0
         r = retrievability(elapsed, card["stability"], w20)
-
         overdue = (date.today() - date.fromisoformat(card["due_date"])).days
 
-        due_cards.append({
+        review_cards.append({
             "id": cid,
             "title": card["title"],
             "state": card["state"],
@@ -260,11 +265,28 @@ def cmd_due(state, limit):
             "overdue_days": overdue,
         })
 
-    # Sort: learning (reinforcement) > review (scheduled) > new (unseen)
-    # Within each group, sort by retrievability ascending (most urgent first)
-    state_priority = {"learning": 0, "review": 1, "new": 2}
-    due_cards.sort(key=lambda c: (state_priority.get(c["state"], 2), c["retrievability"]))
-    return due_cards[:limit]
+    # Sort each pool: review by retrievability (most urgent first),
+    # new cards shuffled for variety
+    review_cards.sort(key=lambda c: (
+        0 if c["state"] == "learning" else 1,
+        c["retrievability"],
+    ))
+    import random
+    random.shuffle(new_cards)
+
+    # Take up to new_limit new cards, rest from review
+    picked_new = new_cards[:new_limit]
+    review_slots = limit - len(picked_new)
+    picked_review = review_cards[:review_slots]
+
+    # If review pool too small, backfill with more new cards
+    if len(picked_review) < review_slots:
+        extra_new = limit - len(picked_new) - len(picked_review)
+        picked_new = new_cards[:len(picked_new) + extra_new]
+
+    # Interleave: review first (urgent), then new cards
+    result = picked_review + picked_new
+    return result[:limit]
 
 
 def cmd_record(state, card_id, rating):
@@ -530,7 +552,10 @@ def main():
     if command == "due":
         opts = parse_args(extra)
         limit = int(opts.get("limit", 10))
-        result = cmd_due(state, limit)
+        new_limit = opts.get("new_limit")
+        if new_limit is not None:
+            new_limit = int(new_limit)
+        result = cmd_due(state, limit, new_limit=new_limit)
 
     elif command == "record":
         opts = parse_args(extra)

@@ -32,7 +32,9 @@ arguments:
 | `/insights` | 商业洞察提取 — 战略模式识别 | 结构化商业洞察 |
 | `/note` | 知识沉淀 — 原子卡片 | Obsidian 卡片组 |
 
-**典型工作流**: `/insights` 分析文章 → 输出洞察 → 自动存入 Obsidian
+**典型工作流**: `/insights` 分析文章 → 讨论 → `/note` 存入 Obsidian
+
+> ⚠️ `/insights` **不写 vault**。所有写入由 `/note` 的双提议通道统一处理，详见 `SCHEMA.md` §2 / §4。
 
 ---
 
@@ -46,7 +48,7 @@ arguments:
 |---------|---------|
 | **URL** | `WebFetch` 抓取并解析 |
 | **本地文件** (`.pdf`, `.md`, `.txt`, `.html`) | `Read` 工具读取 |
-| **Obsidian 关键词** | `mcp__obsidian__search_notes` → `mcp__obsidian__read_note` |
+| **Obsidian 关键词** | `obsidian search:context query="..."` → `obsidian read path="..."`（CLI 不可用时回退 MCP） |
 | **Heptabase 关键词** | `mcp__heptabase__semantic_search_objects` → `mcp__heptabase__get_object` |
 | **粘贴文本** | 直接分析 |
 | **未提供** | 询问用户来源 |
@@ -229,59 +231,21 @@ arguments:
 
 ---
 🔍 要对某条洞察深挖？直接告诉我编号
+💡 要存入 Obsidian？输入 `/note`
 ```
 
 ---
 
-### Step 5: 自动存入 Obsidian
+### Step 5: 存入 Obsidian（交给 `/note`）
 
-分析完成后，**自动**将完整分析写入 Obsidian，无需用户确认。
+**`/insights` 本身不写 vault**。分析输出完成后，如果用户想沉淀，由 `/note` 走双提议通道统一写入。这和 `SCHEMA.md` §2 "/note 是 vault 唯一写入通道" 对齐，和 `/read` 的 handoff 风格一致。
 
-#### 5a. 存储路径
+为什么这样：
+- 四维标签体系（`type/` + `domain/` + `category/` + `mastery/`）只有 `/note` 会按规范生成，`/insights` 自动打的旧前缀（`industry/*` / `focus/*` / `source/*` / `topic/*`）不在 SCHEMA.md §10 的许可集合里
+- `/note` 的 Wikilink 双提议和 Atomic Card 双提议让人在 loop 里，避免 AI 擅自编织知识图谱
+- 单一写入通道让 `/lint` 的体检有唯一来源，MOC 索引也只需要监听一个信号
 
-```
-Cards/Insights/{文章标题简称} {YYYY-MM-DD}.md
-```
-
-- 文章标题简称：取文章标题的核心关键词，去掉冗余修饰，保持简洁可读（如 "How Will OpenAI Compete" → "OpenAI 竞争困境"）
-- 日期为分析日期
-
-#### 5b. Tag 系统
-
-使用 `mcp__obsidian__manage_tags` 添加标签，规则如下：
-
-**固定标签**（每篇必加）：
-- `category/insights`
-
-**行业标签**（根据文章行业自动判断）：
-- `industry/ai`, `industry/fintech`, `industry/saas`, `industry/ecommerce`, `industry/healthcare`, `industry/crypto`, `industry/media`, `industry/enterprise` 等
-- 如涉及多个行业，添加多个标签
-
-**Focus 标签**（根据分析视角）：
-- `focus/general`, `focus/ai`, `focus/strategy`, `focus/model`
-
-**来源标签**（根据文章来源类型）：
-- `source/blog`, `source/report`, `source/interview`, `source/news`, `source/research`
-
-**主题标签**（从关键概念索引中提取 2-4 个最重要的）：
-- 格式：`topic/关键词`（如 `topic/commoditization`, `topic/network-effects`, `topic/platform-strategy`）
-
-#### 5c. 执行步骤
-
-1. 用 `mcp__obsidian__write_note` 将完整分析报告写入上述路径
-2. 用 `mcp__obsidian__manage_tags` 添加所有标签
-3. 用 `mcp__obsidian__write_note` 追加当日 Journal（`Journal/{YYYY-MM-DD}.md`，mode=append），格式：
-
-```markdown
-- 📊 **商业洞察**：[[{卡片标题}]] — {一句话核心启发}
-```
-
-4. 向用户确认存储完成：
-
-```
-✅ 已存入 Obsidian：Cards/Insights/{文件名}
-🏷️ Tags: {所有标签列表}
-```
+所以 Step 5 的行为就一条：**在对话输出末尾提示用户** `💡 要存入 Obsidian？输入 /note`，然后停手等用户决策。
 
 ---
 
@@ -342,7 +306,7 @@ Cards/Insights/{文章标题简称} {YYYY-MM-DD}.md
 
 | 场景 | 组合 |
 |------|------|
-| 洞察需要拆原子卡片 | `/insights`（自动存 OB）→ `/note`（拆卡片） |
+| 洞察需要沉淀 / 拆原子卡片 | `/insights` → `/note`（双提议写入） |
 | 洞察触发深度研究 | `/insights` → content-research-writer |
 | 洞察用于投资分析 | `/insights --focus strategy` → Finance 工作区 |
 | 批量行业扫描 | 多次 `/insights` → 交叉分析 |
@@ -354,4 +318,4 @@ Cards/Insights/{文章标题简称} {YYYY-MM-DD}.md
 - 不编造文章中不存在的数据或事实
 - 分析应有立场但标注立场——如果某个洞察是乐观/悲观的，说明为什么
 - 如果文章质量低或信息密度不足，直接告诉用户"这篇文章的信息密度较低，核心要点如下：..."，不强行凑洞察数量
-- **Obsidian 存储是自动行为**，不需要用户确认，分析完成即写入
+- **`/insights` 不写 vault**。沉淀由 `/note` 的双提议通道统一处理，对齐 `SCHEMA.md` §2 "/note 是 vault 唯一写入通道"

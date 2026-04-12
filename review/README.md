@@ -45,7 +45,7 @@ Review progress is stored locally in `~/.claude/skills/review/state.json`. This 
 - Review history per card
 - Session summaries
 
-The file is created automatically on first run. You can back it up or move it — just update the path in `skill.md`.
+The file is created automatically on first run. You can back it up or move it — just update the path in `SKILL.md`.
 
 ## FSRS Engine
 
