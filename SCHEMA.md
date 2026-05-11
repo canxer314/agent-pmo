@@ -1,20 +1,22 @@
 ---
-title: Knowledge MEMO Schema
-version: 2.0
+title: Project Governance Schema
+version: 4.0
 tags:
   - type/schema
-updated: 2026-04-11
+updated: 2026-05-11
 ---
 
-# SCHEMA.md — Knowledge MEMO Vault Schema
+# SCHEMA.md — Project Lifecycle Governance Schema
 
-> ⚠️ **这是 Knowledge MEMO 作者的个人 vault schema 样本。**
-> 你的领域可能需要不同的 Card 类型、不同的标签体系、不同的权限矩阵。
-> **请 fork 改造，不要原样使用。** 见 `docs/philosophy.md` 里的 "知识管理是高度个人化的"。
+> **个人项目全生命周期绩效运营系统**
 >
-> **Install**: 把本文件复制到你的 Obsidian vault 根目录。AI agent（Claude Code / Codex / 其他）操作 vault 前会自动读取它。
+> 适用角色：项目经理（交付运营）+ 业务经理（前端经营）+ 售前技术工程师（解决方案）+ 解决方案工程师
+> 使用方式：单人使用，Obsidian + Agent Skills
 >
-> **对齐 Karpathy LLM Wiki**: 这是 Karpathy gist 里提到的 "The Schema" 层 —— 规则层，随使用不断迭代。
+> 本系统覆盖从售前对接 → 投标 → 立项 → 执行 → 收尾的全流程，同时支持售前材料管理和需求冻结。
+>
+> **Install**: 把本文件复制到你的 Obsidian vault 根目录。
+> Agent 操作 vault 前会自动读取它。
 
 ---
 
@@ -22,118 +24,240 @@ updated: 2026-04-11
 
 | 层 | 目录 | 所有权 | 说明 |
 |----|------|--------|------|
-| Raw Sources | `Clippings/` | 用户拥有，AI 只读 | Web Clipper 剪藏的原始文章。AI 唯一可做的操作：学完后 move 到 `Clippings/已研究/` |
-| Raw Sources | `Clippings/已研究/` | 用户拥有，AI 只读 | 已通过 `/note` 完成学习沉淀的文章 |
-| Wiki | `Cards/` | AI 编译维护，用户验证 | 编译后的知识层：摘要、概念、洞察、对比、原子卡片、MOC 索引 |
-| Schema | 本文件 | 双方共同迭代 | 规则层，随使用不断优化 |
-| 支撑层 | `Journal/` · `Archive/` · `Attachments/` · `Canvas/` | 各自独立 | 不参与编译流程 |
-
-> **关于目录名 "已研究"**: 作者保留中文命名，因为这体现"真实个人系统"的可信度。你 fork 时可以改成 `Clippings/studied/` 或任何你喜欢的名字 —— 同步更新 `/note` skill 里的对应引用即可。
+| L1 Schema | `SCHEMA.md` + `AGENTS.md` | 人 + AI 共同迭代 | 规则层，定义项目治理规范 |
+| L2 Flywheel | `/prospect` → `/bid` → `/initiate` → `/plan` → `/monitor` | AI 执行，人验证 | 项目生命周期飞轮 |
+| L2 Ops | `/meeting` → `/change` → `/close` | AI 执行，人验证 | 项目运营飞轮 |
+| L3 Governance | `/query` + `/lint` | AI 自主扫描 + 人决策 | 项目治理层 |
+| Archive | `线索池/` `投标档案/` `项目库/` `知识库/` | 人拥有，AI 维护 | 结构化项目档案 |
 
 ---
 
-## 2. Card 模板体系
+## 2. 目录结构规范
 
-`/note` 是 vault **唯一写入通道**。所有对话类 skill（`/read`, `/insights`, `/query` 等）只负责对话，不写 vault。
+```
+Vault/
+├── SCHEMA.md                    # 本文件
+├── AGENTS.md                    # Agent 操作规则
+├── 线索池/                       # 业务经理：售前线索
+│   ├── 线索-{客户}-{主题}.md
+│   └── 已转化/                   # 已立项的线索
+├── 投标档案/                     # 投标过程留痕（含售前工作台）
+│   └── 投标-{客户}-{主题}-{日期}/
+│       ├── 招标要求.md
+│       ├── customer-needs-analysis.md        # 售前：客户痛点、决策链、技术约束
+│       ├── solution.md            # 售前：定制化方案思路
+│       ├── 技术方案.md
+│       ├── 商务报价.md
+│       ├── 投标结果.md
+│       ├── 售前材料/             # PPT/Word/Excel，按日期命名
+│       ├── 技术交流记录/         # 每次技术交流一条记录
+│       └── 需求冻结/             # 客户签字版需求确认书
+├── 项目库/                       # 正式立项后的项目（核心）
+│   └── {PJ-YYYY-NNN}-{项目名}/
+│       ├── 00-项目章程.md        # 项目总览 + 导航
+│       ├── 01-合同/
+│       │   └── 主合同关键条款.md
+│       ├── 02-计划/
+│       │   ├── WBS-工作分解.md
+│       │   └── 里程碑计划.md
+│       ├── 03-执行/
+│       │   ├── 交付物/           # 交付物评审记录
+│       │   ├── 会议纪要/         # 按日期命名
+│       │   ├── 变更记录/         # CR-{编号}.md
+│       │   └── 支出记录/         # EXP-{编号}.md
+│       ├── 04-监控/
+│       │   ├── 风险登记册.md
+│       │   ├── 问题跟踪.md
+│       │   ├── 预算执行表.md
+│       │   └── payment-tracking.md      # 付款节点 + checkbox 跟踪
+│       ├── 05-验收/
+│       │   ├── 阶段验收/
+│       │   └── 终验/
+│       └── 06-收尾/
+│           ├── 决算报告.md
+│           ├── 绩效分配记录.md
+│           └── 项目复盘.md
+├── 供应商库/                     # 采购管理
+│   └── {供应商名}.md
+├── 客户档案/                     # 客户维护
+│   └── {客户名}.md
+├── 知识库/                       # 可复用经验
+│   ├── 合同范本/
+│   ├── 技术方案模板/
+│   └── 经验教训/
+│       └── {主题}-经验教训.md
+└── 个人工作台/
+    └── 今日关注.md               # 每日仪表盘（自动生成）
+```
+
+> **文件夹嵌套不超过 3 层**（AGENTS.md 铁律）。项目内部结构已设计为最大 2 层嵌套。
+
+---
+
+## 3. Card 类型体系
+
+`/initiate` 是 vault **唯一创建项目结构的通道**。`/meeting`、 `/change`、 `/monitor` 在已有项目内写入，不走 `/initiate`。
 
 ### 类型定义
 
-| type 标签 | 存储位置 | 说明 |
-|-----------|----------|------|
-| `type/reading` | `Cards/Reading/` | 从 Clipping 编译的阅读摘要 |
-| `type/research` | `Cards/Research/` | 深度研究报告 |
-| `type/insight` | `Cards/Insights/` | 对话中沉淀的洞察 |
-| `type/concept` | `Cards/` | 独立概念卡 |
-| `type/comparison` | `Cards/` | 跨来源对比分析 |
-| `type/atomic` | `Cards/` | 原子卡片，用于 `/review` 间隔重复 |
-| `type/moc` | `Cards/` | MOC 索引页，按 domain 聚合 |
-| `type/health-report` | `Cards/` | Lint 体检报告 |
+| type 标签 | 存储位置 | 说明 | 必填 frontmatter |
+|-----------|----------|------|------------------|
+| `type/prospect` | `线索池/` | 售前线索 | `stage`, `estimated_value`, `expected_date`, `owner` |
+| `type/bid` | `投标档案/` | 投标档案（含售前工作台） | `bid_date`, `budget_price`, `status` |
+| `type/project` | `项目库/{项目}/00-项目章程.md` | 项目总览 | `project_id`, `contract_value`, `pm`, `client`, `start_date`, `end_date`, `status` |
+| `type/milestone` | `项目库/{项目}/02-计划/` | 里程碑 | `project`, `planned_date`, `payment_pct`, `completion_pct`, `status` |
+| `type/delivery` | `项目库/{项目}/03-执行/交付物/` | 交付物评审 | `project`, `milestone`, `review_date`, `review_result` |
+| `type/meeting` | `项目库/{项目}/03-执行/会议纪要/` | 会议纪要 | `project`, `meeting_date`, `type`, `participants` |
+| `type/change` | `项目库/{项目}/03-执行/变更记录/` | 变更记录 | `project`, `cr_id`, `change_type`, `impact_cost`, `impact_schedule`, `approval_status` |
+| `type/expense` | `项目库/{项目}/03-执行/支出记录/` | 支出记录 | `project`, `amount`, `category`, `approval_status` |
+| `type/risk` | `项目库/{项目}/04-监控/风险登记册.md` | 风险登记项 | `project`, `risk_level`, `probability`, `impact`, `owner`, `status` |
+| `type/issue` | `项目库/{项目}/04-监控/问题跟踪.md` | 问题跟踪项 | `project`, `severity`, `owner`, `status` |
+| `type/cost-report` | `项目库/{项目}/04-监控/预算执行表.md` | 预算执行报告 | `project`, `report_date`, `total_budget`, `spent`, `forecast_eac` |
+| `type/lesson` | `知识库/经验教训/` | 经验教训 | `source_project`, `lesson_type`, `applicable_scenarios` |
+| `type/retro` | `项目库/{项目}/06-收尾/项目复盘.md` | 项目复盘 | `project`, `retro_date`, `participants` |
+| `type/project-moc` | `MOC-Projects.md` `MOC-Clients.md` | 全局索引 | — |
 
 ### 通用 Frontmatter 规则
 
-- 所有 Card 必须有**四维标签**：`type/` + `domain/` + `category/`（可选）+ `mastery/`（可选）
-- 研究摘要必须有 `source` 字段回链原 Clipping
-- 原子卡片必须有 `source` 字段回链研究摘要
-- **原子卡片识别标准**：`type/atomic` 标签为**唯一标准**（v2 起。v1 曾用 `【】-in-H1`，已废弃）
-- **溯源链**：`Clipping ← 研究摘要 ← 原子卡片`
+所有 Card 必须有 **三维标签**：`type/` + `status/` + `priority/`（可选）+ `domain/`（可选）
+
+项目相关文档必须有 `project` 字段回链项目章程。
+
+**状态标签体系**：
+- `status/active` `status/backlog` `status/done` `status/blocked` `status/cancelled`
+- `status/not-started` `status/in-progress` `status/closed`
+- `status/pending-approval` `status/approved` `status/rejected`
+
+**优先级标签体系**：
+- `priority/p0` `priority/p1` `priority/p2` `priority/p3`
+
+### 结构化链接字段（Schema 强制）
+
+以下 frontmatter 字段隐含 wikilink 关系，AI 必须确保对应文件存在：
+
+| 字段 | 含义 | 必须存在 |
+|------|------|----------|
+| `client` | 客户名称 | `客户档案/{name}.md` |
+| `project` | 项目 ID | `项目库/{PJ-xxx}/00-项目章程.md` |
+| `milestone` | 里程碑名 | 同项目下 `02-计划/` 中的对应文件 |
+| `parent` | 父任务/上级 | 同项目下的对应文件 |
+| `originated_from` | 来源线索 | `线索池/{name}.md` |
 
 ---
 
-## 3. Clipping 状态流转
+## 4. 项目状态流转
 
-| 位置 | 含义 |
-|------|------|
-| `Clippings/` | 剪藏了但还没学习（库存） |
-| `Clippings/已研究/` | 已通过 `/note` 完成学习沉淀 |
+### 线索状态
 
-- 新 Clipping 由 Web Clipper 剪入 `Clippings/` 根目录
-- `/note` 完成时，AI 用 `obsidian move` 将来源 Clipping 移至 `Clippings/已研究/`（仅当 `/note` 来源于特定 Clipping）
-- 纯对话产生的 `/note` 不移动任何 Clipping
-- 导航栏一眼可见：`Clippings/` = 待研究库存，`已研究/` = 已消化
+```
+线索池/{线索}.md (stage: 初步接触)
+    → stage: 需求确认 → stage: 方案沟通 → stage: 商务谈判
+    → 【中标】→ move 到 已转化/ → 触发 /initiate
+    → 【未中标】→ status: lost → 录入原因到知识库
+```
+
+### 项目状态
+
+```
+00-项目章程.md (status: initiated)
+    → status: planning (/plan 完成)
+    → status: executing (首个里程碑开始)
+    → status: monitoring (常规执行中)
+    → status: closing (终验完成，走 /close)
+    → status: closed (/close 完成)
+```
+
+### 里程碑状态
+
+```
+not-started → in-progress → done
+    ↑_________blocked_________|
+```
+
+### 变更审批状态
+
+```
+draft → submitted → under-review → approved/rejected → implemented
+```
 
 ---
 
-## 4. Ingest 编译规则
+## 5. Ingest 与写入规则
 
-Ingest 是 **用户驱动的学习过程**，不是自动流水线。**人必须在 loop 里**。
+### 双提议机制（Human-in-the-loop 强制点）
 
-### 流程
+所有项目相关写入动作（除 MOC 更新和确定性链接外）必须经过双提议：
 
-1. 用户手动剪藏 → `Clippings/`
-2. 用户选择学习 → 对话 skill（`/read`, `/insights` 等）
-3. 用户说 "note" → `/note` 执行写入
+**提议 1 — 关联建议**：
+- 新建项目 → 关联已有客户档案？关联来源线索？
+- 新建里程碑 → 关联合同付款节点？关联历史类似里程碑？
+- 新建会议纪要 → 参会人链接到干系人档案？决议关联到相关任务？
+- 新建变更 → 溯源到会议纪要？关联受影响里程碑？
 
-### `/note` 双提议（Human-in-the-loop 强制点）
+**提议 2 — 影响/建议**：
+- 里程碑延期 → 是否调整下游里程碑？是否触发变更？
+- 变更批准 → 是否追加预算？是否更新计划？
+- 风险升级 → 是否更新应对措施？是否上报？
 
-`/note` 回顾对话后同时提出两类建议：
+用户逐条确认后，AI 才执行写入。
 
-**提议 1 — Wikilink 建议**（链接到已有 Card）
-- AI 搜索 vault 中已有 Cards，找到相关的列出
-- 重要概念无对应 Card → 建议建空链标记知识缺口
-- **用户逐条确认**
+### 确定性链接（自动建立，无需提议）
 
-**提议 2 — Atomic Card 建议**（创建新卡片）
-- AI 从对话中提取值得反复记忆的知识点
-- **用户选择要创建哪些**
+| 场景 | 自动操作 |
+|------|----------|
+| `/initiate` 创建项目 | 自动在项目章程中链接 `[[客户档案-{client}]]` |
+| `/plan` 创建里程碑 | 自动在里程碑中链接 `[[00-项目章程]]` |
+| `/meeting` 创建纪要 | 自动链接 `[[00-项目章程]]` |
+| `/change` 创建变更 | 自动链接 `[[预算执行表]]` 和受影响里程碑 |
+| 线索中标转化 | 自动 move 线索到 `已转化/`，并链接到项目章程 |
 
 ### 涟漪更新
 
 | 操作 | 权限 |
 |------|------|
-| 新 Card 内加 wikilink（用户已确认的） | AI 执行 |
+| 项目内新建文档（用户已确认的） | AI 执行 |
 | 更新 MOC 索引 | AI 自主 |
-| 已有 Card 正文补链 | 列出建议，用户确认 |
-
-### 双输出原则
-
-每次 `/note` 操作产出两份东西：一份给用户看的确认输出，一份回写 vault 的更新。
+| 修改已有文档正文 | 列出建议，用户确认 |
+| 跨项目链接（如客户档案更新） | 列出建议，用户确认 |
 
 ---
 
-## 5. Wikilink 规则
+## 6. 链接规则
 
 ### 质量标准
 
-- 只链 **同 domain 或有实质关联** 的 Card，不是提到就链
-- 优先链接概念卡（`type/concept`）— 它们是知识图谱的枢纽节点
-- 一张 Card 的 wikilink 控制在 **5-15 个**
-- `aliases` 字段帮助匹配同义词
+- 只链 **同项目或有实质关联** 的文档，不是提到就链
+- 优先链接枢纽节点：`type/project`（项目章程）、`type/milestone`、客户档案
+- 一张文档的 wikilink 控制在 **5-15 个**
+- `aliases` 字段帮助匹配同义词（如客户简称）
 
 ### 空链含义
 
-`[[未创建的概念]]` 在 Obsidian 中显示为紫色，表示知识缺口。**这是有意义的标记，不是错误。**
+`[[未创建的文档]]` 在 Obsidian 中显示为紫色，表示信息缺口。**这是有意义的标记，不是错误。**
+
+### 跨项目链接规范
+
+- 客户名必须统一：使用 `客户档案/{官方名称}.md`，aliases 中放简称
+- 供应商名同理统一
+- 经验教训可跨项目链接
 
 ---
 
-## 6. MOC 索引规则
+## 7. MOC 索引规则
 
-MOC（Map of Content）按 domain 聚合，AI 自主维护。
+### 全局 MOC（AI 自主维护）
 
-### 结构
+- `MOC-Projects.md`：按状态分组的所有项目索引
+- `MOC-Clients.md`：客户档案索引，按合作金额/频次排序
+- `MOC-Lessons.md`：经验教训索引，按类型分组
 
-- 文件名：`Cards/MOC-{Domain}.md`
-- 标签：`type/moc` + `domain/{domain}`
-- Section 分区：概念 / 阅读 / 洞察 / 研究 / 知识缺口
+### 项目级 MOC（项目章程兼任）
+
+`00-项目章程.md` 同时是该项目的主导航页：
+
+- 包含项目基本信息
+- 包含项目内所有文档的导航链接
+- 包含快速状态表（里程碑、预算、风险）
 
 ### 权限细分
 
@@ -146,92 +270,141 @@ MOC（Map of Content）按 domain 聚合，AI 自主维护。
 
 ---
 
-## 7. Lint 检查项
+## 8. Lint 检查项
 
 ### 全 vault 体检项
 
 | 类别 | 检查项 | 严重度 |
 |------|--------|--------|
-| 链接 | 断链（wikilink 指向不存在页面） | 高 |
-| 链接 | 孤岛 Card（零 backlink） | 中 |
-| 链接 | 空链统计（知识缺口汇总） | 信息 |
-| 标签 | Card 缺四维标签 | 高 |
-| 标签 | 非四维体系的噪声标签 | 中 |
-| 格式 | 缺 frontmatter 的 .md 文件 | 高 |
-| 库存 | `Clippings/` 待研究 vs `已研究/` 统计 | 信息 |
-| 库存 | 超过 30 天未研究的 Clippings | 中 |
-| 索引 | MOC 遗漏新 Card | 中 |
-| 索引 | MOC 中链接失效 | 高 |
-| 缺口 | 按 domain 分析空链密度，建议研究方向 | 信息 |
+| 链接 | 断链（wikilink 指向不存在页面） | 🔴 高 |
+| 结构 | 项目文件夹缺少必需文档（无线程登记册/预算执行表） | 🔴 高 |
+| 关联 | 项目章程未链接到客户档案 | 🔴 高 |
+| 对齐 | 里程碑无对应合同付款节点 | 🟡 中 |
+| 变更 | 变更记录无影响评估 | 🟡 中 |
+| 会议 | 会议纪要中有决议项但无后续跟踪 | 🟡 中 |
+| 风险 | 孤儿风险（未被任何会议纪要/变更引用） | 🟡 中 |
+| 命名 | 跨项目客户名不一致 | 🟡 中 |
+| 数据 | 里程碑完成率 100% 但状态不是 done | 🔴 高 |
+| 数据 | 预算执行表汇总 ≠ 各支出记录之和 | 🔴 高 |
+| 数据 | 项目状态 closed 但还有 active 里程碑 | 🔴 高 |
+| 风险 | 高风险项超过 7 天未更新 | 🟡 中 |
+| 逾期 | 里程碑逾期但未关联变更记录 | 🟡 中 |
+| 信息 | Clipping 库存统计 | 🟢 低 |
 
 ### Lint 写入语义
 
 | Lint 可以自动做的 | Lint 只报告不做的 |
 |-------------------|-------------------|
-| 生成健康报告写入 `Cards/` | 修复断链 |
-| | 给 Card 补标签 |
-| | 建新 Card 填补缺口 |
-| | 修改/删除任何 Card |
+| 生成健康报告写入 `个人工作台/` | 修复断链 |
+| 更新 `今日关注.md` | 给文档补标签 |
+| | 建新文档填补缺口 |
+| | 修改/删除任何已有文档 |
 
 ---
 
-## 8. Query 规则
+## 9. Query 规则
 
-`/query` 让 AI 带 vault 上下文回答问题。
+`/query` 让 AI 带 vault 上下文回答项目治理问题。
 
-- 先读 MOC 索引 → 搜索相关 Cards → 读取内容 → 综合回答
-- 回答中引用 vault 内容时用 `[[Card名]]` 标注来源
+- 先读全局 MOC → 搜索相关项目/客户/里程碑 → 读取内容 → 综合回答
+- 回答中引用 vault 内容时用 `[[文档名]]` 标注来源
 - vault 中无相关内容时**诚实告知**
-- 好的回答可通过 `/note` 回写（用户决定）
+- 好的回答可通过 `/meeting` 或 `/change` 相关流程回写（用户决定）
+
+### 典型查询模式
+
+| 查询类型 | 搜索策略 |
+|----------|----------|
+| 项目健康度 | 读项目章程 → 读监控文件 → 综合评估 |
+| 预算超支项目 | 扫描所有预算执行表，筛选 CPI < 0.9 |
+| 客户历史 | 读客户档案 → 搜索关联项目 |
+| 投标成功率 | 统计线索池 + 投标档案 |
+| 类似项目参考 | 按 domain 标签搜索 → 读复盘/经验教训 |
 
 ---
 
-## 9. 权限矩阵
+## 10. 权限矩阵
 
 | 操作 | 权限 |
 |------|------|
-| 创建研究摘要 Card | AI 执行（`/note` 流程内） |
-| 创建 Atomic Card | 用户从提议中选择 |
-| 新 Card 内加 wikilink | 用户从提议中确认 |
-| 已有 Card 正文补链 | 用户确认 |
-| MOC 添加新条目 | AI 自主 |
-| MOC 修改/删除已有条目 | 用户确认 |
-| Clipping 移至 `已研究` | AI 自动（仅 `/note` 来源于 Clipping 时） |
-| Lint 报告生成/写入 | AI 自动 |
+| 创建项目结构（/initiate） | AI 执行（用户触发后） |
+| 创建里程碑/计划 | AI 执行（/plan 流程内，用户触发） |
+| 创建会议纪要 | AI 执行（/meeting 流程内） |
+| 创建变更记录 | AI 执行（/change 流程内） |
+| 新建文档内加 wikilink | 用户从提议中确认 |
+| 已有文档正文补链 | 用户确认 |
+| 更新 MOC 索引 | AI 自主 |
+| 更新项目章程状态表 | AI 自主（基于监控数据） |
+| 生成 Lint 报告 | AI 自动 |
 | Lint 修复建议 | 用户拍板执行 |
 | `SCHEMA.md` 修改 | 双方讨论后更新 |
 
 ---
 
-## 10. 命名规范
+## 11. 命名规范
+
+### 文件命名
 
 | 类型 | 命名规则 | 示例 |
 |------|----------|------|
-| 阅读编译卡 | `{来源标题} — 阅读编译` | `Reading/Karpathy 知识库方法论 — 阅读编译.md` |
-| 研究摘要 | `{主题} — 研究摘要` | `多巴胺奖励系统 — 研究摘要.md` |
-| 概念卡 | `{概念名}` | `奖励预测误差.md` |
-| 洞察卡 | `{洞察主题}` | `交易系统的反脆弱性.md` |
-| 原子卡片 | `{概念名}` | `RLHF.md` |
-| MOC | `MOC-{Domain}` | `MOC-Neuroscience.md` |
-| 健康报告 | `Vault Health Report YYYY-MM-DD` | `Vault Health Report 2026-04-09.md` |
+| 线索 | `线索-{客户}-{主题}` | `线索-某市政府-数字化转型.md` |
+| 投标 | `投标-{客户}-{主题}-{日期}` | `投标-某市政府-数字化-2026-03/` |
+| 项目 | `PJ-YYYY-NNN-{项目名}` | `PJ-2026-001-某市政府数字化/` |
+| 项目章程 | `00-项目章程` | `00-项目章程.md` |
+| 合同 | `主合同关键条款` | `01-合同/主合同关键条款.md` |
+| 里程碑 | `里程碑-{名称}` | `02-计划/里程碑-需求确认.md` |
+| WBS | `WBS-工作分解` | `02-计划/WBS-工作分解.md` |
+| 会议纪要 | `会议纪要-{日期}-{类型}` | `03-执行/会议纪要/2026-05-10-周例会.md` |
+| 变更 | `CR-{编号}` | `03-执行/变更记录/CR-001.md` |
+| 支出 | `EXP-{编号}` | `03-执行/支出记录/EXP-001.md` |
+| 交付物评审 | `评审-{交付物名}` | `03-执行/交付物/评审-需求规格说明书.md` |
+| 风险登记册 | `风险登记册` | `04-监控/风险登记册.md` |
+| 预算执行表 | `预算执行表` | `04-监控/预算执行表.md` |
+| 决算 | `决算报告` | `06-收尾/决算报告.md` |
+| 复盘 | `项目复盘` | `06-收尾/项目复盘.md` |
+| 客户档案 | `{客户官方名称}` | `客户档案/某市人民政府.md` |
+| 供应商 | `{供应商名}` | `供应商库/某科技公司.md` |
+| 经验教训 | `{主题}-经验教训` | `知识库/经验教训/需求变更处理-经验教训.md` |
+| 客户需求分析 | `customer-needs-analysis` | `投标档案/.../customer-needs-analysis.md` |
+| 解决方案 | `solution` | `投标档案/.../solution.md` |
+| 售前材料清单 | `presales-material-list` | `投标档案/.../presales-material-list.md` |
+| 技术交流记录 | `technical-exchange-record-{日期}` | `投标档案/.../技术交流记录/YYYY-MM-DD.md` |
+| 需求冻结确认书 | `requirement-lock-confirmation` | `投标档案/.../需求冻结/requirement-lock-confirmation.md` |
+
+### 项目编号规则
+
+- 格式：`PJ-YYYY-NNN`
+- YYYY：立项年份
+- NNN：年度内顺序号，从 001 开始
+- 示例：`PJ-2026-001`
+
+### 变更编号规则
+
+- 项目内顺序：`CR-{NNN}`
+- 示例：`CR-001`
+
+### 支出编号规则
+
+- 项目内顺序：`EXP-{NNN}`
+- 示例：`EXP-001`
 
 ### 标签命名
 
-- 使用小写英文 + 连字符：`domain/cognitive-science`
-- 层级用斜杠：`domain/research/biology`
-- **不创建四维体系外的标签前缀**
+- 使用小写英文 + 连字符：`status/in-progress`
+- 层级用斜杠：`priority/p0`
+- **不创建三维体系外的标签前缀**
 
 ---
 
-## 11. 验证责任
+## 12. 验证责任
 
 **人拍板，AI 建议。**
 
-- AI 可以自主做的：MOC 新增条目、Clipping 移至已研究、Lint 报告生成
-- AI 必须提议等确认的：wikilink 建链、atomic 卡片创建、已有 Card 修改
+- AI 可以自主做的：MOC 更新、项目章程状态表更新、Lint 报告生成、确定性链接建立
+- AI 必须提议等确认的：wikilink 建链、跨项目链接、已有文档修改、变更影响评估
 - 用户不需要看懂代码也能判断：所有提议用自然语言列出
 
 ---
 
 > 本 Schema 随使用不断迭代。修改需双方讨论后更新。
-> Fork 你自己的版本时，建议记录每次修改的理由和日期 —— 这本身就是"知识管理是过程而非产品"的证据。
+> 建议记录每次修改的理由和日期。

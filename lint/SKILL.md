@@ -1,14 +1,28 @@
 ---
 name: lint
-description: Obsidian Vault 全量体检。扫描断链、孤岛、缺标签、噪声标签、Clipping 库存、MOC 完整性，产出健康报告。当用户说"lint"、"体检"、"vault 检查"、"健康检查"时触发。
+description: "项目治理体检。扫描断链、项目结构缺失、客户档案未关联、里程碑无合同对应、数据不一致、跨项目命名冲突。产出健康报告。当用户说'lint'、'体检'、'vault检查'、'健康检查'时触发。"
 invocation: user
+arguments:
+  - name: scope
+    description: "'all'（全 vault）、'project'（仅项目库）、'links'（仅链接检查）。默认 'all'"
+    required: false
 ---
 
-# /lint — Vault 健康体检
+# /lint — 项目治理体检
 
-> 参考规则：先读取 vault 根目录 `SCHEMA.md` 获取完整检查项定义。
+全 vault 体检，确保项目档案的完整性和一致性。
 
-## 执行流程
+## 定位
+
+| Skill | 职责 | 输出 |
+|-------|------|------|
+| `/monitor` | 运营监控 | 项目健康度（业务层面） |
+| `/lint` | **项目治理体检（结构层面）** | Vault 健康报告 |
+| `/query` | 跨项目查询 | 知识检索 |
+
+---
+
+## Behavior
 
 ### Step 1: 读取 Schema
 
@@ -16,54 +30,116 @@ invocation: user
 obsidian read path="SCHEMA.md"
 ```
 
-确认当前检查项清单和标签体系定义。
+确认当前检查项清单和规则定义。
 
 ### Step 2: 全量扫描
 
-并行执行以下检查（使用 Obsidian CLI + subagent 加速）：
+并行执行以下检查：
 
 #### 2a: 链接检查
+
 ```bash
 # 断链：搜索所有 wikilink，检查目标是否存在
 obsidian search query="[["
-# 孤岛：检查 Cards/ 下零 backlink 的文件
-# 对每个 Card: obsidian backlinks path="Cards/{name}.md"
+
+# 对每个项目检查内部链接
+obsidian files folder="项目库"
 ```
 
-#### 2b: 标签检查
+#### 2b: 项目结构检查
+
 ```bash
-# 扫描所有 Cards，检查 frontmatter 中是否有 type/ 和 domain/ 标签
-# 扫描所有标签，找出不属于四维体系的噪声标签
-obsidian tags path="Cards/"
+# 扫描每个项目文件夹
+obsidian folders folder="项目库"
 ```
 
-#### 2c: 格式检查
+检查每个项目是否包含必需文档：
+- `00-项目章程.md`
+- `01-合同/主合同关键条款.md`
+- `04-监控/风险登记册.md`
+- `04-监控/预算执行表.md`
+- `04-监控/问题跟踪.md`
+
+#### 2c: 关联检查
+
 ```bash
-# 扫描所有 .md 文件，检查是否有 frontmatter（以 --- 开头）
-obsidian files folder="Cards"
-# 逐个读取检查 frontmatter
+# 检查项目章程的 client 字段
+obsidian search query="type/project"
 ```
 
-#### 2d: Clipping 库存
+逐个读取项目章程，检查：
+- `client` 字段是否对应存在的客户档案
+- `project_id` 是否与文件夹名一致
+
+#### 2d: 里程碑对齐检查
+
 ```bash
-# 统计待研究 / 已研究数量（按文件夹区分）
-obsidian files folder="Clippings"       # 待研究（根目录下的 .md 文件）
-obsidian files folder="Clippings/已研究"  # 已研究
-# 检查超过 30 天未研究的（按 created 字段判断）
+obsidian search query="type/milestone"
 ```
 
-#### 2e: MOC 完整性
+检查：
+- 里程碑是否有对应的合同付款节点（如 `payment_pct > 0`）
+- 里程碑状态是否与完成率一致
+
+#### 2e: 变更检查
+
 ```bash
-# 读取每个 MOC 文件
-# 检查是否有 Card 被遗漏（有 domain 标签但不在对应 MOC 中）
-# 检查 MOC 中的链接是否有效
+obsidian files folder="项目库" pattern="*/变更记录/*"
 ```
 
-#### 2f: 空链统计（知识缺口）
+检查：
+- 变更记录是否有影响评估
+- 已批准变更是否已更新里程碑/预算
+
+#### 2f: 会议纪要检查
+
 ```bash
-# 收集所有指向不存在页面的 [[wikilink]]
-# 按 domain 分组统计
+obsidian files folder="项目库" pattern="*/会议纪要/*"
 ```
+
+检查：
+- 会议纪要是否有决议项
+- 决议项是否有责任人+截止日期
+
+#### 2g: 风险检查
+
+```bash
+obsidian search query="type/risk"
+```
+
+检查：
+- 高风险项是否超过 7 天未更新
+- 风险是否有应对措施和责任人
+
+#### 2h: 数据一致性检查
+
+```bash
+# 预算执行表 vs 支出记录
+obsidian search query="type/cost-report"
+```
+
+检查：
+- 预算执行表的总支出是否等于各支出记录之和
+- 里程碑完成率 100% 的文档状态是否为 done
+- 项目状态 closed 的是否还有 active 里程碑
+
+#### 2i: 命名一致性检查
+
+```bash
+obsidian search query="客户档案"
+```
+
+检查：
+- 同一客户在不同项目中名称是否一致
+- 项目编号是否符合 `PJ-YYYY-NNN` 格式
+
+#### 2j: 空链统计
+
+```bash
+obsidian search query="[["
+```
+
+收集所有指向不存在页面的 wikilink，按项目分组统计。
 
 ### Step 3: 安全写入
 
@@ -71,7 +147,10 @@ Lint 可自动执行的（无需用户确认）：
 1. 生成健康报告
 
 Lint **不能自动执行的**（只报告）：
-- 修复断链、补标签、建 Card、修改/删除任何内容
+- 修复断链
+- 补标签
+- 建文档
+- 修改/删除任何内容
 
 ### Step 4: 生成健康报告
 
@@ -80,38 +159,56 @@ Lint **不能自动执行的**（只报告）：
 ```markdown
 ---
 title: "Vault Health Report YYYY-MM-DD"
-tags:
-  - type/health-report
+type: cost-report
 date: YYYY-MM-DD
+tags:
+  - type/cost-report
 ---
+
+# Vault Health Report YYYY-MM-DD
 
 ## 总览
 
 - 健康评分: XX/100
-- Cards: {总数} | Clippings: {unread数} unread / {read数} read
-- 断链: {数量} | 孤岛: {数量} | 噪声标签: {数量}
+- 项目数: {N} | 活跃: {N} | 已关闭: {N}
+- 断链: {N} | 结构缺失: {N} | 命名冲突: {N}
 
 ## 🔴 需要修复（高严重度）
 
-{断链清单、缺标签 Card 清单、缺 frontmatter 文件清单、MOC 链接失效}
+| 项目 | 问题 | 建议 |
+|------|------|------|
+| PJ-001 | 断链：`[[李四]]` 不存在 | 创建干系人档案或修正姓名 |
+| PJ-002 | 项目结构缺失：无风险登记册 | 补充创建 |
 
 ## 🟡 建议改善（中严重度）
 
-{孤岛 Card、噪声标签、超 30 天 unread Clippings、MOC 遗漏}
+| 项目 | 问题 | 建议 |
+|------|------|------|
+| PJ-001 | 里程碑"系统上线"无合同付款节点对应 | 核对合同条款 |
+| 跨项目 | 客户名不一致：`某市政府` vs `市政府` | 统一命名 |
 
 ## 🟢 信息
 
-{Clipping 库存统计、空链统计}
+| 类别 | 统计 |
+|------|------|
+| 线索池 | {N} 条待跟进 |
+| 投标档案 | {N} 个，中标 {N} 个 |
+| 项目库 | {N} 个，活跃 {N} 个 |
+| 知识库 | {N} 条经验教训 |
 
-## 📚 研究缺口建议
+## 数据一致性
 
-{按 domain 分组的空链热点，建议研究方向}
+| 检查项 | 结果 |
+|--------|------|
+| 预算汇总一致性 | ✓ / ✗ |
+| 里程碑状态一致性 | ✓ / ✗ |
+| 项目状态一致性 | ✓ / ✗ |
 ```
 
 ### Step 5: 存入 Vault
 
 ```bash
-obsidian create path="Cards/Vault Health Report YYYY-MM-DD.md" content="..." overwrite
+obsidian create path="个人工作台/Vault Health Report YYYY-MM-DD.md" content="..." overwrite
 ```
 
 ### Step 6: 输出摘要
@@ -123,17 +220,31 @@ obsidian create path="Cards/Vault Health Report YYYY-MM-DD.md" content="..." ove
 | 扣分项 | 每个扣分 |
 |--------|----------|
 | 断链 | -3 |
-| 缺 frontmatter | -2 |
-| 缺四维标签 | -1 |
-| 孤岛 Card | -0.5 |
-| 噪声标签 | -1 |
-| MOC 遗漏 | -0.5 |
+| 项目结构缺失 | -5 |
+| 客户档案未关联 | -5 |
+| 里程碑无合同对应 | -2 |
+| 变更无影响评估 | -2 |
+| 会议纪要无决议跟踪 | -1 |
+| 高风险项超期未更新 | -3 |
+| 预算汇总不一致 | -5 |
+| 里程碑状态不一致 | -3 |
+| 跨项目命名冲突 | -2 |
+| 空链 | -0.5 |
 
 满分 100，扣完为止，最低 0 分。
 
 ## Cron 模式
 
 被 cron 调用时（非用户手动触发），行为与手动相同，但：
-- 报告自动写入 `Journal/Vault Health Report YYYY-MM-DD.md`（而非 Cards/），避免每日例行报告在 Cards/ 堆积产生噪声
+- 报告自动写入 `个人工作台/Vault Health Report YYYY-MM-DD.md`
 - 不输出到对话（无用户在场）
-- **不做任何"顺手修复"**：Step 3 的 lint 写入边界（只能写健康报告、不能补标签 / 不能改 / 不能建其他 Card）在 cron 模式下**完全适用**，和手动模式无差别
+- **不做任何"顺手修复"**
+
+---
+
+## Notes
+
+- `/lint` 是项目档案的**结构体检**，与 `/monitor` 的业务健康度互补
+- 建议每周运行一次 `/lint`
+- 所有修复建议必须经过用户确认后执行
+- 评分规则可根据实际情况调整
