@@ -125,7 +125,7 @@ Vault/
 | `type/retro` | `项目库/{项目}/06-收尾/项目复盘.md` | 项目复盘 | `project`, `retro_date`, `participants` |
 | `type/project-moc` | `MOC-Projects.md` `MOC-Clients.md` | 全局索引 | — |
 | `type/kanban` | `项目库/{项目}/03-执行/交付看板.md` | 交付看板（执行层数据中枢） | `project`, `updated`, `total_active` |
-| `type/work-item` | `项目库/{项目}/03-执行/专项工作/` | 专项工作文档（重量级临时事项的工作台） | `project`, `owner`, `deadline`, `output`, `source`, `source_doc` |
+| `type/work-item` | `项目库/{项目}/03-执行/专项工作/` | 专项工作文档（重量级临时事项的工作台） | `project`, `owner`, `deadline`, `output`, `source`（`meeting` / `standup` / `adhoc`）, `source_doc` |
 | `type/task` | — | 看板中的交付条目（REQ-）或临时事项（TMP-），非独立文档 | （嵌入在看板表中，无独立 frontmatter） |
 
 ### 交付看板规范
@@ -279,6 +279,8 @@ needs-analysis → solution-drafting → solution-communicating
 | 技术答疑沉淀 | 自动链接来源 `[[技术交流记录]]` | 无条件 |
 | 竞品实体化 | 自动链接来源 `[[投标结果]]` | 无条件 |
 | `/meeting` 决议创建专项工作 | 自动在专项工作文档中链接来源 `[[会议纪要-{date}]]` | 用户确认创建后 |
+| `/monitor` track 创建专项工作 | 自动在专项工作文档中链接 `[[03-执行/交付看板]]` | source=standup |
+| 临时交待创建专项工作 | 自动在专项工作文档中链接 `[[03-执行/交付看板]]` | source=adhoc |
 | `/change` 批准后产出新需求 | 自动在看板创建 REQ 条目，来源标记 CR-{N}；CR 中记录产出 REQ 编号 | 变更批准后 |
 
 ### 涟漪更新
