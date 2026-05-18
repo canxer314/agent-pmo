@@ -80,6 +80,9 @@ obsidian search query="type/milestone"
 检查：
 - 里程碑是否有对应的合同付款节点（如 `payment_pct > 0`）
 - 里程碑状态是否与完成率一致
+- `planned_date < today` 且 `status` 不是 `done` 的里程碑，是否有关联的变更记录（CR）说明延期原因
+
+> 交叉检查方法：对每个逾期里程碑，搜索 `变更记录/` 下所有 CR 的正文和 frontmatter，检查是否有 `[[里程碑-{name}]]` 引用。无引用则报告。
 
 #### 2e: 变更检查
 
@@ -110,6 +113,9 @@ obsidian search query="type/risk"
 检查：
 - 高风险项是否超过 7 天未更新
 - 风险是否有应对措施和责任人
+- 是否存在未被任何会议纪要或变更记录引用的孤儿风险
+
+> 孤儿风险判断：扫描该 `type/risk` 条目（风险登记册中的行），检查是否有任何 `会议纪要/` 或 `变更记录/` 文档通过 wikilink 引用该风险。无引用则标记为孤儿。
 
 #### 2h: 数据一致性检查
 
@@ -154,6 +160,19 @@ obsidian read path="项目库/{project}/03-执行/交付看板.md"
 - REQ 条目缺少 `milestone` 字段关联
 - REQ 预计日期超过关联里程碑计划日期但无对应 CR
 - TMP done 超过 7 天未移动到归档区
+
+#### 2l: 专项工作检查
+
+```bash
+obsidian search query="type/work-item"
+```
+
+对每个 `type/work-item` 文档检查：
+- `source=meeting` 但 `source_doc` 指向的会议纪要文件不存在（断链）
+- `deadline < today` 且 `status` 不是 `done`（过期未完成）
+- 该文档未被任何看板的 TMP 行通过 wikilink 引用（孤儿工作 — 有文档但无跟踪）
+
+> 判断"未被看板引用"的方法：从交付看板中提取所有 `[[专项工作/...]]` 链接，与 `专项工作/` 下实际文件做差集。
 
 ### Step 3: 安全写入
 
@@ -236,18 +255,24 @@ obsidian create path="个人工作台/Vault Health Report YYYY-MM-DD.md" content
 | 断链 | -3 |
 | 项目结构缺失 | -5 |
 | 客户档案未关联 | -5 |
+| 项目状态 closed 但有 active 里程碑 | -5 |
 | 里程碑无合同对应 | -2 |
 | 变更无影响评估 | -2 |
 | 会议纪要无决议跟踪 | -1 |
 | 高风险项超期未更新 | -3 |
+| 孤儿风险（未被会议纪要/变更引用）| -2 |
 | 预算汇总不一致 | -5 |
 | 里程碑状态不一致 | -3 |
+| 里程碑逾期未关联变更记录 | -2 |
 | 跨项目命名冲突 | -2 |
 | 空链 | -0.5 |
 | 看板缺失（executing 项目无看板） | -5 |
 | REQ 无 milestone 关联 | -2 |
 | REQ 日期溢出里程碑且无 CR | -5 |
 | TMP done 未归档 | -1 |
+| 专项工作 source_doc 断链 | -2 |
+| 专项工作 deadline 过期未 done | -2 |
+| 专项工作孤儿（未被看板引用） | -1 |
 
 满分 100，扣完为止，最低 0 分。
 

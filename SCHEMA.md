@@ -361,11 +361,14 @@ needs-analysis → solution-drafting → solution-communicating
 | 数据 | 项目状态 closed 但还有 active 里程碑 | 🔴 高 |
 | 风险 | 高风险项超过 7 天未更新 | 🟡 中 |
 | 逾期 | 里程碑逾期但未关联变更记录 | 🟡 中 |
-| 信息 | Clipping 库存统计 | 🟢 低 |
+| 链接 | 空链统计（指向不存在页面的 wikilink，按项目分组）| 🟢 低 |
 | 看板 | REQ 条目无 `milestone` 字段 | 🟡 中 |
 | 看板 | TMP done 超过 7 天未归档 | 🟢 低 |
 | 看板 | REQ 预计日期超过关联里程碑计划日期但无对应 CR | 🔴 高 |
 | 看板 | 交付看板文件不存在（项目 status 为 executing） | 🔴 高 |
+| 专项工作 | source=meeting 但 `source_doc` 指向不存在的会议纪要 | 🟡 中 |
+| 专项工作 | deadline 已过期但 status 不是 done | 🟡 中 |
+| 专项工作 | 文档未被看板 TMP 行引用（孤儿工作）| 🟡 中 |
 
 ### Lint 写入语义
 
