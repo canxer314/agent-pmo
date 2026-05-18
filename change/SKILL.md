@@ -268,6 +268,7 @@ obsidian read path="项目库/{project}/04-监控/预算执行表.md"
 | 会议产生变更 | `/meeting` → `/change` |
 | 变更后监控 | `/change` → `/monitor` |
 | 重大变更需开会 | `/change` → `/meeting`（变更评审会） |
+| 变更影响合同条款 | `/change` → `/contract action=amend` |
 
 ---
 
@@ -277,3 +278,4 @@ obsidian read path="项目库/{project}/04-监控/预算执行表.md"
 - 影响评估必须完整，不能遗漏工期/成本/质量/合同任何维度
 - 变更审批状态必须及时更新
 - 所有变更必须有书面留痕（会议纪要或变更单）
+- 变更涉及合同金额、工期或服务范围时，建议走 `/contract action=amend` 创建补充协议

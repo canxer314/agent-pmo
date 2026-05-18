@@ -51,6 +51,8 @@ obsidian search query="type/project"
 ```bash
 obsidian read path="项目库/{project}/00-项目章程.md"
 obsidian read path="项目库/{project}/01-合同/主合同关键条款.md"
+obsidian read path="项目库/{project}/01-合同/履行义务清单.md"
+obsidian read path="项目库/{project}/01-合同/签订记录.md"
 obsidian read path="项目库/{project}/02-计划/里程碑计划.md"
 obsidian read path="项目库/{project}/04-监控/预算执行表.md"
 obsidian read path="项目库/{project}/04-监控/风险登记册.md"
@@ -181,6 +183,7 @@ tags:
 
 - [x] 全部收款完成
 - [x] 全部交付物已提交
+- [x] 履行义务清单全部完成（见 [[01-合同/履行义务清单]]）
 - [x] 质保金条款已确认
 - [ ] 质保期跟踪已移交
 ```
@@ -379,6 +382,7 @@ obsidian read path="MOC-Projects.md"
 | 场景 | 组合 |
 |------|------|
 | 收尾前检查健康度 | `/close` 前 → `/monitor` |
+| 收尾前确认履约完毕 | `/close` 前 → `/contract action=track` |
 | 复盘后查询历史 | `/close` 后 → `/query "同类项目复盘"` |
 | 客户档案更新 | `/close` → 客户档案 |
 

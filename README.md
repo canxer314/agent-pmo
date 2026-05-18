@@ -14,7 +14,7 @@
 |---|---|
 | LLM Wiki + 间隔重复 | 项目全生命周期管理 |
 | 个人知识积累 | 售前→投标→合同→执行→回款 |
-| /read /insights /note /review | /prospect /bid /presales /initiate /plan /meeting /change /payment /monitor /close |
+| /read /insights /note /review | /prospect /bid /presales /initiate /plan /contract /meeting /change /payment /monitor /close |
 
 ---
 
@@ -29,7 +29,7 @@
 │  三层架构 / 14+ Card 类型 / 状态流转 / 权限矩阵         │
 ├─────────────────────────────────────────────────────────┤
 │  L2 Flywheel Layer（生命周期飞轮）                       │
-│  /prospect → /bid → /presales → /initiate → /plan          │
+│  /prospect → /bid → /presales → /initiate → /plan → /contract  │
 │  /meeting → /change → /payment → /close                    │
 │  （AI 执行，人验证）                                     │
 ├─────────────────────────────────────────────────────────┤
@@ -51,6 +51,10 @@ Vault/
 │   └── {PJ-YYYY-NNN}/
 │       ├── 00-项目章程.md
 │       ├── 01-合同/
+│       │   ├── 主合同关键条款.md
+│       │   ├── 签订记录.md
+│       │   ├── 履行义务清单.md
+│       │   └── 补充协议/
 │       ├── 02-计划/
 │       ├── 03-执行/
 │       ├── 04-监控/
@@ -64,7 +68,7 @@ Vault/
 
 ---
 
-## 十二个 Skills
+## 十三个 Skills
 
 ### 生命周期飞轮
 
@@ -75,6 +79,7 @@ Vault/
 | `/presales` | 售前工作台（需求分析 + 方案迭代 + 材料管理 + 技术交流 + 需求冻结）| 售前文档 + 技术交流记录 |
 | `/initiate` | 项目立项（唯一创建项目结构的通道） | 项目文件夹 + 章程 |
 | `/plan` | 计划制定 | WBS + 里程碑 |
+| `/contract` | 合同管理（审查 + 签订 + 补充协议 + 履约跟踪） | 履行清单 + 签订记录 + 补充协议 |
 | `/meeting` | 会议纪要（执行阶段会议：周例会/启动会/评审会等）| 会议文档 |
 | `/change` | 变更管理 | 变更记录 |
 | `/payment` | 回款跟踪 | 回款汇总 + 催款跟踪 |
@@ -119,6 +124,10 @@ Vault/
 ```
 /initiate 立项
     ↓
+/contract action=review 审查合同条款，生成履行清单
+    ↓
+/contract action=sign 记录合同签订
+    ↓
 /plan 制定 WBS 和里程碑
     ↓
 /meeting 记录启动会
@@ -127,6 +136,7 @@ Vault/
 /meeting 记录周例会/评审会
 /monitor 定期健康检查
 /change 处理变更需求
+/contract action=track 履约跟踪
 /payment 跟踪回款节点
     ↓
 /close 项目收尾
@@ -149,14 +159,14 @@ cd knowledge-mgmt
 
 ```bash
 mkdir -p "$HOME/.claude/skills"
-cp -r prospect bid presales initiate plan meeting change monitor payment query lint "$HOME/.claude/skills/"
+cp -r prospect bid presales initiate plan contract meeting change monitor payment query lint "$HOME/.claude/skills/"
 ```
 
 **Codex**
 
 ```bash
 mkdir -p "$HOME/.agents/skills"
-cp -r prospect bid initiate plan meeting change monitor query lint "$HOME/.agents/skills/"
+cp -r prospect bid initiate plan contract meeting change monitor query lint "$HOME/.agents/skills/"
 ```
 
 ### 3. 安装 SCHEMA + AGENTS 到 Obsidian Vault
@@ -208,6 +218,8 @@ priority: p0 | p1 | p2 | p3
 | 场景 | 自动操作 |
 |------|----------|
 | `/initiate` 创建项目 | 自动在项目章程中链接 `[[客户档案-{client}]]` |
+| `/contract` action=review | 自动链接 `[[00-项目章程]]` + `[[主合同关键条款]]` |
+| `/contract` action=sign | 自动链接 `[[主合同关键条款]]` + `[[履行义务清单]]` |
 | `/plan` 创建里程碑 | 自动在里程碑中链接 `[[00-项目章程]]` |
 | `/meeting` 创建纪要 | 自动链接 `[[00-项目章程]]` |
 | `/change` 创建变更 | 自动链接 `[[预算执行表]]` 和受影响里程碑 |

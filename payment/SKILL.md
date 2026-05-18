@@ -17,6 +17,7 @@ arguments:
 | Skill | 职责 | 输出 |
 |-------|------|------|
 | `/initiate` | 项目立项 — 合同关键条款 | 付款节点定义 |
+| `/contract` | 合同管理 — 合同签订与履约跟踪 | 履行清单 + 签订记录 |
 | `/monitor` | 运营监控 — 个人工作台更新 | 今日关注中的回款提醒 |
 | `/payment` | **回款跟踪 — 付款节点汇总与催款** | 回款跟踪文档 + 汇总视图 |
 | `/close` | 项目收尾 — 决算 | 决算报告 |
@@ -173,6 +174,7 @@ obsidian create path="项目库/{project}/04-监控/回款跟踪.md" content="..
 | 场景 | 组合 |
 |------|------|
 | 回款节点来自合同 | `/initiate` → `/payment` |
+| 回款节点核对 | `/payment` → `/contract action=track` |
 | 回款提醒同步工作台 | `/payment` → `/monitor action=dashboard` |
 | 决算核对回款 | `/payment` → `/close` |
 

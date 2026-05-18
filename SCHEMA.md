@@ -114,6 +114,8 @@ Vault/
 | `type/milestone` | `项目库/{项目}/02-计划/` | 里程碑 | `project`, `planned_date`, `payment_pct`, `completion_pct`, `status` |
 | `type/delivery` | `项目库/{项目}/03-执行/交付物/` | 交付物评审 | `project`, `milestone`, `review_date`, `review_result` |
 | `type/meeting` | `项目库/{项目}/03-执行/会议纪要/` | 会议纪要 | `project`, `meeting_date`, `type`, `participants` |
+| `type/contract` | `项目库/{项目}/01-合同/` | 合同主文档（关键条款、签订记录、履行清单） | `project`, `contract_value`, `sign_date`, `status` |
+| `type/contract-amendment` | `项目库/{项目}/01-合同/补充协议/` | 补充协议 | `project`, `sa_id`, `amendment_date`, `amendment_type`, `impact_amount`, `impact_schedule` |
 | `type/change` | `项目库/{项目}/03-执行/变更记录/` | 变更记录 | `project`, `cr_id`, `change_type`, `impact_cost`, `impact_schedule`, `approval_status` |
 | `type/expense` | `项目库/{项目}/03-执行/支出记录/` | 支出记录 | `project`, `amount`, `category`, `approval_status` |
 | `type/risk` | `项目库/{项目}/04-监控/风险登记册.md` | 风险登记项 | `project`, `risk_level`, `probability`, `impact`, `owner`, `status` |
@@ -209,6 +211,24 @@ not-started → in-progress → done
 draft → submitted → under-review → approved/rejected → implemented
 ```
 
+### 合同状态
+
+```
+draft → reviewed → signed → executing → amended → fulfilled
+                                      ↑______________|
+                                                  ↘ breached
+```
+
+| 状态 | 含义 | 触发条件 |
+|------|------|----------|
+| `draft` | 合同骨架已创建 | `/initiate` 创建立项后 |
+| `reviewed` | 条款已审查，履行清单已生成 | `/contract action=review` 完成后 |
+| `signed` | 已签订 | `/contract action=sign` 完成后 |
+| `executing` | 履行中 | 项目进入 executing 状态且合同已签订 |
+| `amended` | 有补充协议（可回退至 executing） | `/contract action=amend` 完成后 |
+| `fulfilled` | 全部履行完毕 | 履行义务清单全部 done + 回款全部完成 |
+| `breached` | 出现违约 | 义务清单有逾期未完成项 |
+
 ### 投标状态（通过双提议确认流转，不由 AI 静默推导）
 
 ```
@@ -271,6 +291,9 @@ needs-analysis → solution-drafting → solution-communicating
 | `/presales` action=tech-exchange PoC 记录 | 自动链接 `[[解决方案]]` + `[[客户需求分析]]`（PoC 验证对象和用例来源） | 无条件 |
 | `/change` 创建变更 | 自动链接 `[[预算执行表]]` 和受影响里程碑 | 无条件 |
 | `/change` 来源为会议 | 自动链接来源 `[[会议纪要-{date}]]` | source=meeting |
+| `/contract` action=review | 自动链接 `[[00-项目章程]]` + `[[01-合同/主合同关键条款]]` | 无条件（同项目固定文件名） |
+| `/contract` action=sign | 自动链接 `[[01-合同/主合同关键条款]]` + `[[01-合同/履行义务清单]]`，自动更新项目章程合同签订日期 | 无条件 |
+| `/contract` action=amend | 自动链接 `[[01-合同/主合同关键条款]]` + `[[04-监控/预算执行表]]`（如金额变化）| 无条件（同项目固定文件名） |
 | `/close` 生成决算报告 | 自动链接 `[[00-项目章程]]` + `[[01-合同/主合同关键条款]]` + `[[04-监控/预算执行表]]` + `[[02-计划/里程碑计划]]` | 无条件（同项目固定文件名） |
 | `/close` 生成项目复盘 | 自动链接 `[[06-收尾/决算报告]]` | 无条件 |
 | `/close` 生成绩效分配记录 | 自动链接 `[[06-收尾/决算报告]]` | 无条件 |
@@ -369,6 +392,9 @@ needs-analysis → solution-drafting → solution-communicating
 | 专项工作 | source=meeting 但 `source_doc` 指向不存在的会议纪要 | 🟡 中 |
 | 专项工作 | deadline 已过期但 status 不是 done | 🟡 中 |
 | 专项工作 | 文档未被看板 TMP 行引用（孤儿工作）| 🟡 中 |
+| 合同 | 项目 status=executing 但 `01-合同/` 下无签订记录 | 🔴 高 |
+| 合同 | 履行义务清单 `last_review` 超过 30 天未更新 | 🟡 中 |
+| 合同 | 补充协议 SA 编号不连续（如 SA-001, SA-003 缺 SA-002）| 🟢 低 |
 
 ### Lint 写入语义
 
@@ -414,6 +440,8 @@ needs-analysis → solution-drafting → solution-communicating
 | 创建里程碑/计划 | AI 执行（/plan 流程内，用户触发） |
 | 创建会议纪要 | AI 执行（/meeting 流程内） |
 | 创建变更记录 | AI 执行（/change 流程内） |
+| 创建合同文档（/contract） | AI 执行（用户触发后） |
+| 修改合同条款 | 用户确认（合同数据具有法律审计价值） |
 | 新建文档内加 wikilink | 用户从提议中确认 |
 | 已有文档正文补链 | 用户确认 |
 | 更新 MOC 索引 | AI 自主 |
@@ -436,7 +464,10 @@ needs-analysis → solution-drafting → solution-communicating
 | 投标 | `投标-{客户}-{主题}-{日期}` | `投标-某市政府-数字化-2026-03/` |
 | 项目 | `PJ-YYYY-NNN-{项目名}` | `PJ-2026-001-某市政府数字化/` |
 | 项目章程 | `00-项目章程` | `00-项目章程.md` |
-| 合同 | `主合同关键条款` | `01-合同/主合同关键条款.md` |
+| 合同关键条款 | `主合同关键条款` | `01-合同/主合同关键条款.md` |
+| 合同签订记录 | `签订记录` | `01-合同/签订记录.md` |
+| 履行义务清单 | `履行义务清单` | `01-合同/履行义务清单.md` |
+| 补充协议 | `SA-{编号}` | `01-合同/补充协议/SA-001.md` |
 | 里程碑 | `里程碑-{名称}` | `02-计划/里程碑-需求确认.md` |
 | WBS | `WBS-工作分解` | `02-计划/WBS-工作分解.md` |
 | 会议纪要 | `会议纪要-{日期}-{类型}` | `03-执行/会议纪要/2026-05-10-周例会.md` |
@@ -469,6 +500,11 @@ needs-analysis → solution-drafting → solution-communicating
 
 - 项目内顺序：`CR-{NNN}`
 - 示例：`CR-001`
+
+### 补充协议编号规则
+
+- 项目内顺序：`SA-{NNN}`
+- 示例：`SA-001`
 
 ### 支出编号规则
 
