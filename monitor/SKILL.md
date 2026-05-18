@@ -439,7 +439,7 @@ done
 - 存在 `客户需求分析.md`（有内容）但无 `解决方案.md` → `needs-analysis`
 - 存在 `解决方案.md`（有内容）→ `solution-drafting`
 - 存在 `售前材料清单.md`（有发给客户的记录）→ `solution-communicating`
-- 存在 `技术交流记录/` 下有文件 → `tech-exchange-loop`
+- 存在 `技术交流记录/` 下有文件 → `tech-exchange-loop`（如最近一次为 PoC，标注 `[PoC 进行中]`）
 - 存在 `需求冻结/需求冻结确认书.md` → `requirement-locked`
 - 存在 `商务报价.md`（lock 之后更新）→ `priced`
 - 存在 `投标结果.md`（有 won/lost）→ `won` 或 `lost`
@@ -458,7 +458,7 @@ done
 | needs-analysis | {N} | {sum} 万 |
 | solution-drafting | {N} | {sum} 万 |
 | solution-communicating | {N} | {sum} 万 |
-| tech-exchange-loop | {N} | {sum} 万 |
+| tech-exchange-loop（含 PoC） | {N} | {sum} 万 |
 | requirement-locked | {N} | {sum} 万 |
 | priced | {N} | {sum} 万 |
 | submitted | {N} | {sum} 万 |

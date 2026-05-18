@@ -86,6 +86,10 @@ Vault/
 │   ├── 技术方案模板/
 │   └── 经验教训/
 │       └── {主题}-经验教训.md
+│   ├── 技术答疑/                   # 可选：用户确认沉淀的标准技术回应
+│   │   └── {主题}.md
+│   └── 竞品/                       # 可选：用户确认沉淀的竞品档案
+│       └── {竞品名}.md
 └── 个人工作台/
     └── 今日关注.md               # 每日仪表盘（自动生成）
 ```
@@ -114,6 +118,8 @@ Vault/
 | `type/issue` | `项目库/{项目}/04-监控/问题跟踪.md` | 问题跟踪项 | `project`, `severity`, `owner`, `status` |
 | `type/cost-report` | `项目库/{项目}/04-监控/预算执行表.md` | 预算执行报告 | `project`, `report_date`, `total_budget`, `spent`, `forecast_eac` |
 | `type/lesson` | `知识库/经验教训/` | 经验教训 | `source_project`, `lesson_type`, `applicable_scenarios` |
+| `type/faq` | `知识库/技术答疑/` | 标准技术回应（可选） | `domain`（领域标签） |
+| `type/competitor` | `知识库/竞品/` | 竞品档案（可选） | `industry`（擅长行业） |
 | `type/retro` | `项目库/{项目}/06-收尾/项目复盘.md` | 项目复盘 | `project`, `retro_date`, `participants` |
 | `type/project-moc` | `MOC-Projects.md` `MOC-Clients.md` | 全局索引 | — |
 
@@ -230,6 +236,9 @@ needs-analysis → solution-drafting → solution-communicating
 | `/meeting` 创建纪要 | 自动链接 `[[00-项目章程]]` |
 | `/change` 创建变更 | 自动链接 `[[预算执行表]]` 和受影响里程碑 |
 | 线索中标转化 | 自动 move 线索到 `已转化/`，并链接到项目章程 |
+| `/meeting` PoC 记录 | 自动链接 `[[解决方案]]` 和 `[[客户需求分析]]`（PoC 验证对象和用例来源） |
+| 技术答疑沉淀 | 自动链接来源 `[[技术交流记录]]` |
+| 竞品实体化 | 自动链接来源 `[[投标结果]]` |
 
 ### 涟漪更新
 
