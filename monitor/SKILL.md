@@ -1,19 +1,19 @@
 ---
 name: monitor
-description: "运营监控。核心skill。读取项目所有监控文件，综合计算项目健康度：进度健康度、预算健康度、质量健康度、风险健康度。输出项目健康报告。当用户说'monitor'、'监控'、'项目状态'、'健康检查'、'项目汇报'时触发。"
+description: "运营监控。核心skill。支持每日站会跟踪（track）、项目健康度诊断（health）、个人工作台更新（dashboard）、回款跟踪（payments）、售前管道检查（presales）。当用户说'monitor'、'监控'、'项目状态'、'健康检查'、'项目汇报'、'track'、'站会'、'今日关注'时触发。"
 invocation: user
 arguments:
   - name: project
-    description: "项目编号或名称。'all' 表示扫描所有活跃项目。如不提供，默认 'all'。"
+    description: "项目编号或名称。'all' 表示扫描所有活跃项目。如不提供，默认 'all'。track 模式下默认列出活跃项目供选择。"
     required: false
   - name: action
-    description: "'health'（健康报告）、'dashboard'（更新个人工作台）、'payments'（回款跟踪）、'cron'（定时扫描）。默认 'health'"
+    description: "'health'（健康报告）、'track'（每日站会跟踪）、'dashboard'（更新个人工作台）、'payments'（回款跟踪）、'presales'（售前管道）、'cron'（定时扫描）。默认 'health'"
     required: false
 ---
 
 # /monitor — 运营监控
 
-项目治理的核心 skill。综合计算项目健康度，输出健康报告。
+项目治理的核心 skill。综合计算项目健康度，输出健康报告。同时支持每日站会的轻量级进度跟踪。
 
 ## 定位
 
@@ -22,10 +22,10 @@ arguments:
 | `/plan` | 计划制定 | WBS + 里程碑 |
 | `/meeting` | 会议纪要 | 会议文档 |
 | `/change` | 变更管理 | 变更记录 |
-| `/monitor` | **运营监控 — 项目健康度诊断** | 健康报告 + 工作台更新 |
+| `/monitor` | **运营监控 — 每日站会跟踪 + 项目健康度诊断** | 看板更新 + 健康报告 + 工作台更新 |
 | `/close` | 项目收尾 | 决算 + 复盘 |
 
-**典型工作流**: 各运营 skill 写入后 → `/monitor` 定期扫描 → 生成健康报告
+**典型工作流**: 各运营 skill 写入后 → `/monitor action=track` 每日站会 → `/monitor action=health` 周度诊断
 
 ---
 
@@ -35,13 +35,165 @@ arguments:
 
 | action | 行为 |
 |--------|------|
+| `track` | **每日站会跟踪** — 读取交付看板，逐项更新进度 |
 | `health`（默认）| 生成指定项目的健康报告 |
 | `dashboard` | 更新 `个人工作台/今日关注.md` |
 | `payments` | 回款跟踪汇总视图 |
 | `presales` | 售前管道健康检查 — 扫描所有投标档案，展示各投标状态和卡顿项 |
 | `cron` | 定时扫描所有活跃项目，静默更新工作台 |
 
-### Step 1: 扫描项目文件
+---
+
+### Step 0-TRACK: 每日站会跟踪（action=track）
+
+#### 0-TRACK.1: 选择项目
+
+如 `project` 参数已提供且非 `all`，直接读取。否则：
+
+```bash
+obsidian search query="type/project"
+```
+
+过滤 `status:executing` 或 `status:monitoring` 的项目，列出供用户选择。
+
+#### 0-TRACK.2: 读取看板与上下文
+
+```bash
+obsidian read path="项目库/{project}/03-执行/交付看板.md"
+obsidian read path="项目库/{project}/02-计划/里程碑计划.md"
+```
+
+如交付看板不存在（首次 track），使用模板创建：
+
+```bash
+obsidian create path="项目库/{project}/03-执行/交付看板.md" content="{kanban_template}"
+```
+
+#### 0-TRACK.3: 展示当前状态
+
+按阶段分区展示看板内容：
+
+```
+📋 {项目名} 交付看板 — YYYY-MM-DD
+
+设计 (N): REQ-05(10%🟡)
+开发 (N): REQ-01(60%) REQ-02(30%🔴) REQ-04(80%)
+测试 (N): REQ-03(80%🟡)
+待发布 (N): （空）
+──────────────────
+本周完成 (N): REQ-06(登录) REQ-07(仪表盘)
+──────────────────
+临时事项 (N):
+  TMP-01 方案演示  李四 doing → 后天到期
+  TMP-02 排查问题  王五 doing → 明天到期
+  TMP-03 合同盖章  张三 done ✓
+
+🔴 阻塞: REQ-02 等接口 3天
+🟡 有风险: REQ-05 需求未确认
+
+更新哪个？输入编号 (REQ-xx / TMP-xx) 或操作:
+  "new-req" 新增交付条目
+  "new-tmp" 新增临时事项
+  "archive" 归档已完成条目
+  "done" 结束
+```
+
+#### 0-TRACK.4: 更新交付条目（REQ）
+
+用户输入 REQ 编号后，逐项询问：
+
+```
+REQ-01 用户管理 | 开发 | 王五 | 60% | 预计 05-28 | M2
+
+逐项更新（回车跳过该项）:
+  阶段 [1设计 2开发 3测试 4待发布 5已发布 6已验收]:
+  完成%:
+  负责人:
+  预计完成:
+  阻塞标记 [正常 / 🟡有风险 / 🔴已阻塞]:
+  备注:
+```
+
+保存后检测溢出：
+
+```
+REQ-01 预计从 05-28 → 06-02
+  关联里程碑 M2 计划 07-15
+  → M2 buffer 剩余 43 天，当前变更未溢出 ✓
+
+或:
+
+⚠ REQ-01 预计从 05-28 → 07-20
+  → 关联里程碑 M2 计划 07-15
+  🔴 已超出里程碑计划日期 5 天！
+  → 是否需要走 /change 评估影响？
+```
+
+#### 0-TRACK.5: 更新临时事项（TMP）
+
+用户输入 TMP 编号后，仅询问状态和备注（无阶段/完成%/里程碑）：
+
+```
+TMP-01 方案演示 | 李四 | doing | 预计 05-28
+
+状态 [1=todo 2=doing 3=done 4=取消]:
+备注:
+```
+
+TMP done 后不删除，留在临时事项区等归档。
+
+#### 0-TRACK.6: 新增条目
+
+**新增交付条目（new-req）**：
+
+```
+新增交付条目:
+  需求名称: 数据看板
+  负责人: 王五
+  完成%: 0
+  预计完成: 06-15
+  里程碑: M3
+  阶段: 设计
+  来源: 客户需求 / WBS / 变更产出 / 内部发现
+  来源编号（如 CR-003）:
+```
+
+新增的 REQ 归入对应阶段分区。
+
+**新增临时事项（new-tmp）**：
+
+```
+新增临时事项:
+  事项名称:
+  负责人:
+  预计消掉:
+```
+
+#### 0-TRACK.7: 归档
+
+```
+归档已完成条目:
+  1. REQ-06 登录模块（已发布） → 移到 已发布（本周）
+  2. TMP-03 合同盖章（done）→ 移到 已归档（本周）
+
+逐条确认。
+```
+
+#### 0-TRACK.8: 写入看板
+
+修改反映到 `交付看板.md` 文件（使用 overwrite）。更新 frontmatter 的 `updated` 和 `total_active` 字段。
+
+#### 0-TRACK.9: 更新工作台
+
+```bash
+obsidian read path="个人工作台/今日关注.md"
+```
+
+在看板更新后刷新「今日关注」中的看板摘要 section。
+
+---
+
+### Step 1: 扫描项目文件（action=health）
 
 #### 1a. 选择项目
 
@@ -60,6 +212,7 @@ obsidian search query="type/project"
 ```bash
 obsidian read path="项目库/{project}/00-项目章程.md"
 obsidian read path="项目库/{project}/02-计划/里程碑计划.md"
+obsidian read path="项目库/{project}/03-执行/交付看板.md"
 obsidian read path="项目库/{project}/04-监控/风险登记册.md"
 obsidian read path="项目库/{project}/04-监控/预算执行表.md"
 obsidian read path="项目库/{project}/04-监控/问题跟踪.md"
@@ -68,9 +221,15 @@ obsidian read path="项目库/{project}/03-执行/变更记录/"
 
 ### Step 2: 计算健康度
 
-#### 2a. 进度健康度
+#### 2a. 进度健康度（从看板聚合）
 
 ```
+1. 读取交付看板 → 提取所有 REQ 条目及其 milestone 字段
+2. 按 milestone 分组 → 计算每个里程碑的 completion_pct
+   completion_pct = avg(该里程碑下所有 REQ 的 completion_pct)
+3. 如果所有关联条目 completion_pct = 100% → milestone status = done，回填 actual_date
+4. 对比计算结果与 milestone 文档当前值，差异 > 5% 则更新 milestone frontmatter
+
 进度健康度 = 里程碑达成率 × 关键路径偏差系数
 
 里程碑达成率 = 已完成里程碑数 / 总里程碑数
@@ -80,6 +239,16 @@ obsidian read path="项目库/{project}/03-执行/变更记录/"
 - 进度健康度 ≥ 0.9：🟢 健康
 - 0.7 ≤ 进度健康度 < 0.9：🟡 预警
 - 进度健康度 < 0.7：🔴 告警
+
+#### 2a-bis. 阻塞升级检查
+
+```
+扫描看板中所有 🔴 标记的 REQ 条目：
+  - 如果同一 REQ 连续被标记 🔴 超过 5 个工作日
+  - → 自动在 问题跟踪.md 中创建一条
+  - → 链接回看板 REQ
+  - → 在 REQ 备注中追加 "已升级: 问题跟踪#I0N"
+```
 
 #### 2b. 预算健康度
 
@@ -265,6 +434,12 @@ date: YYYY-MM-DD
 | 项目 | 进度 | 预算 | 风险 |
 |------|------|------|------|
 | PJ-001 | 50% | 98% 🟢 | 1高 🟡 |
+
+## 📋 看板摘要（来自交付看板）
+
+| 项目 | 活跃REQ | 阻塞 | 本周完成 |
+|------|---------|------|----------|
+| PJ-001 | 5 | 1 🔴 | 2 |
 | PJ-002 | 80% | 95% 🟢 | 0高 🟢 |
 ```
 

@@ -1,9 +1,9 @@
 ---
 title: Project Governance Schema
-version: 4.0
+version: 4.1
 tags:
   - type/schema
-updated: 2026-05-11
+updated: 2026-05-26
 ---
 
 # SCHEMA.md — Project Lifecycle Governance Schema
@@ -61,6 +61,8 @@ Vault/
 │       │   ├── WBS-工作分解.md
 │       │   └── 里程碑计划.md
 │       ├── 03-执行/
+│       │   ├── 交付看板.md        # 执行层数据中枢：每日站会跟踪
+│       │   ├── 专项工作/           # 重量级临时事项的工作文档
 │       │   ├── 交付物/           # 交付物评审记录
 │       │   ├── 会议纪要/         # 按日期命名
 │       │   ├── 变更记录/         # CR-{编号}.md
@@ -122,6 +124,27 @@ Vault/
 | `type/competitor` | `知识库/竞品/` | 竞品档案（可选） | `industry`（擅长行业） |
 | `type/retro` | `项目库/{项目}/06-收尾/项目复盘.md` | 项目复盘 | `project`, `retro_date`, `participants` |
 | `type/project-moc` | `MOC-Projects.md` `MOC-Clients.md` | 全局索引 | — |
+| `type/kanban` | `项目库/{项目}/03-执行/交付看板.md` | 交付看板（执行层数据中枢） | `project`, `updated`, `total_active` |
+| `type/work-item` | `项目库/{项目}/03-执行/专项工作/` | 专项工作文档（重量级临时事项的工作台） | `project`, `owner`, `deadline`, `output`, `source`, `source_doc` |
+| `type/task` | — | 看板中的交付条目（REQ-）或临时事项（TMP-），非独立文档 | （嵌入在看板表中，无独立 frontmatter） |
+
+### 交付看板规范
+
+交付看板（`03-执行/交付看板.md`）是执行层的数据中枢。WBS 是 Plan（"应该怎么做"），看板是 Actual（"实际在做什么"）。
+
+**三种条目类型**：
+
+| 条目 | 编号前缀 | 独立文档 | 阶段流转 | 参与里程碑聚合 | 说明 |
+|------|---------|---------|----------|---------------|------|
+| 交付条目 | REQ- | 否 | 设计→开发→测试→待发布→已发布→已验收 | 是 | 对里程碑有贡献的可交付需求 |
+| 轻量临时事项 | TMP- | 否 | 仅 todo/doing/done | 否 | 按天消掉的原子任务 |
+| 重量临时事项 | TMP- + wikilink | 是（`专项工作/`） | 仅 todo/doing/done | 否 | 跨数天、多步骤、有明确产出 |
+
+**看板分区**：按当前阶段分区（设计/开发/测试/待发布/已发布/待启动/临时事项/已归档），不按 WBS 阶段分区。
+
+**里程碑聚合**：`/monitor action=health` 读取看板，按 `milestone` 字段分组，计算 `completion_pct = avg(该里程碑下所有 REQ 的 completion_pct)`。所有关联条目 100% → milestone status → done。
+
+**与 /change 的分界线**：REQ 的预计日期超过关联里程碑的计划日期时，必须触发 `/change`。REQ 的日常状态更新（完成%、负责人、阶段推进）不触发 `/change`。
 
 ### 通用 Frontmatter 规则
 
@@ -255,6 +278,8 @@ needs-analysis → solution-drafting → solution-communicating
 | 线索中标转化 | 自动 move 线索到 `已转化/`，并链接到项目章程 | 无条件 |
 | 技术答疑沉淀 | 自动链接来源 `[[技术交流记录]]` | 无条件 |
 | 竞品实体化 | 自动链接来源 `[[投标结果]]` | 无条件 |
+| `/meeting` 决议创建专项工作 | 自动在专项工作文档中链接来源 `[[会议纪要-{date}]]` | 用户确认创建后 |
+| `/change` 批准后产出新需求 | 自动在看板创建 REQ 条目，来源标记 CR-{N}；CR 中记录产出 REQ 编号 | 变更批准后 |
 
 ### 涟漪更新
 
@@ -335,6 +360,10 @@ needs-analysis → solution-drafting → solution-communicating
 | 风险 | 高风险项超过 7 天未更新 | 🟡 中 |
 | 逾期 | 里程碑逾期但未关联变更记录 | 🟡 中 |
 | 信息 | Clipping 库存统计 | 🟢 低 |
+| 看板 | REQ 条目无 `milestone` 字段 | 🟡 中 |
+| 看板 | TMP done 超过 7 天未归档 | 🟢 低 |
+| 看板 | REQ 预计日期超过关联里程碑计划日期但无对应 CR | 🔴 高 |
+| 看板 | 交付看板文件不存在（项目 status 为 executing） | 🔴 高 |
 
 ### Lint 写入语义
 
@@ -384,6 +413,8 @@ needs-analysis → solution-drafting → solution-communicating
 | 已有文档正文补链 | 用户确认 |
 | 更新 MOC 索引 | AI 自主 |
 | 更新项目章程状态表 | AI 自主（基于监控数据） |
+| 更新看板条目（/monitor action=track） | AI 执行（用户逐项确认） |
+| 更新里程碑 completion_pct（从看板聚合） | AI 自主 |
 | 生成 Lint 报告 | AI 自动 |
 | Lint 修复建议 | 用户拍板执行 |
 | `SCHEMA.md` 修改 | 双方讨论后更新 |
@@ -411,6 +442,8 @@ needs-analysis → solution-drafting → solution-communicating
 | 预算执行表 | `预算执行表` | `04-监控/预算执行表.md` |
 | 决算 | `决算报告` | `06-收尾/决算报告.md` |
 | 复盘 | `项目复盘` | `06-收尾/项目复盘.md` |
+| 交付看板 | `交付看板` | `03-执行/交付看板.md` |
+| 专项工作 | `YYYY-MM-DD-{标题}` | `03-执行/专项工作/2026-05-25-客户年度汇报.md` |
 | 客户档案 | `{客户官方名称}` | `客户档案/某市人民政府.md` |
 | 供应商 | `{供应商名}` | `供应商库/某科技公司.md` |
 | 经验教训 | `{主题}-经验教训` | `知识库/经验教训/需求变更处理-经验教训.md` |

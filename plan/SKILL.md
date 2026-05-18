@@ -195,6 +195,11 @@ tags:
 2. 里程碑之间是否有关键路径风险？建议检查
 3. 是否需要为每个里程碑预设验收检查清单？
 
+提议 3 — 交付看板初始化：
+1. 是否从 WBS 生成交付看板初始条目？
+   → 是（将 WBS 工作包拆分为 REQ 条目，关联对应里程碑，全部标记"待启动"）
+   → 否（稍后手动创建或由 /monitor action=track 首次运行时初始化空看板）
+
 请回复编号确认，或"跳过"
 ```
 
@@ -226,6 +231,21 @@ obsidian read path="项目库/{project}/00-项目章程.md"
 ```bash
 obsidian property:set path="项目库/{project}/00-项目章程.md" name="tags" value="type/project,status/planning,priority/p0" type=list
 ```
+
+#### 5c. 初始化交付看板（如用户确认）
+
+```bash
+# 读取 WBS 工作包，拆分为 REQ 条目
+obsidian read path="项目库/{project}/02-计划/WBS-工作分解.md"
+```
+
+AI 按 WBS 工作包合理拆分为 REQ 条目（每个工作包 1-N 个条目），关联对应里程碑，全部标记"待启动"：
+
+```bash
+obsidian create path="项目库/{project}/03-执行/交付看板.md" content="{kanban_template_with_WBS_items}" overwrite
+```
+
+拆分原则：工作包粒度适中则直映射为 1 个 REQ；工作包很大则拆分为多个独立可跟踪的 REQ。用户后续可在站会中调整。
 
 ### Step 6: 输出确认
 

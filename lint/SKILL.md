@@ -141,6 +141,20 @@ obsidian search query="[["
 
 收集所有指向不存在页面的 wikilink，按项目分组统计。
 
+#### 2k: 看板检查
+
+```bash
+# 检查交付看板是否存在
+obsidian search query="type/kanban"
+obsidian read path="项目库/{project}/03-执行/交付看板.md"
+```
+
+检查：
+- 项目 status 为 executing 但交付看板不存在
+- REQ 条目缺少 `milestone` 字段关联
+- REQ 预计日期超过关联里程碑计划日期但无对应 CR
+- TMP done 超过 7 天未移动到归档区
+
 ### Step 3: 安全写入
 
 Lint 可自动执行的（无需用户确认）：
@@ -230,6 +244,10 @@ obsidian create path="个人工作台/Vault Health Report YYYY-MM-DD.md" content
 | 里程碑状态不一致 | -3 |
 | 跨项目命名冲突 | -2 |
 | 空链 | -0.5 |
+| 看板缺失（executing 项目无看板） | -5 |
+| REQ 无 milestone 关联 | -2 |
+| REQ 日期溢出里程碑且无 CR | -5 |
+| TMP done 未归档 | -1 |
 
 满分 100，扣完为止，最低 0 分。
 
