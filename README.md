@@ -14,7 +14,7 @@
 |---|---|
 | LLM Wiki + 间隔重复 | 项目全生命周期管理 |
 | 个人知识积累 | 售前→投标→合同→执行→回款 |
-| /read /insights /note /review | /prospect /bid /initiate /plan /meeting /change /monitor /close |
+| /read /insights /note /review | /prospect /bid /presales /initiate /plan /meeting /change /payment /monitor /close |
 
 ---
 
@@ -29,8 +29,8 @@
 │  三层架构 / 14+ Card 类型 / 状态流转 / 权限矩阵         │
 ├─────────────────────────────────────────────────────────┤
 │  L2 Flywheel Layer（生命周期飞轮）                       │
-│  /prospect → /bid → /initiate → /plan                  │
-│  /meeting → /change → /close                            │
+│  /prospect → /bid → /presales → /initiate → /plan          │
+│  /meeting → /change → /payment → /close                    │
 │  （AI 执行，人验证）                                     │
 ├─────────────────────────────────────────────────────────┤
 │  L3 Governance Layer（治理层）                           │
@@ -64,7 +64,7 @@ Vault/
 
 ---
 
-## 十一个 Skills
+## 十二个 Skills
 
 ### 生命周期飞轮
 
@@ -77,13 +77,14 @@ Vault/
 | `/plan` | 计划制定 | WBS + 里程碑 |
 | `/meeting` | 会议纪要（售前技术交流 / 执行阶段会议） | 会议文档 |
 | `/change` | 变更管理 | 变更记录 |
+| `/payment` | 回款跟踪 | 回款汇总 + 催款跟踪 |
 | `/close` | 项目收尾 | 决算 + 复盘 |
 
 ### 治理层
 
 | Skill | 职责 | 输出 |
 |-------|------|------|
-| `/monitor` | 运营监控（健康度诊断） | 健康报告 + 工作台 |
+| `/monitor` | 运营监控（站会跟踪 + 健康度诊断） | 看板更新 + 健康报告 + 工作台 |
 | `/query` | 查询项目知识 | 带来源的答案 |
 | `/lint` | Vault 体检 | 健康报告 |
 
@@ -126,6 +127,7 @@ Vault/
 /meeting 记录周例会/评审会
 /monitor 定期健康检查
 /change 处理变更需求
+/payment 跟踪回款节点
     ↓
 /close 项目收尾
 ```
@@ -147,7 +149,7 @@ cd knowledge-mgmt
 
 ```bash
 mkdir -p "$HOME/.claude/skills"
-cp -r prospect bid initiate plan meeting change monitor query lint "$HOME/.claude/skills/"
+cp -r prospect bid presales initiate plan meeting change monitor payment query lint "$HOME/.claude/skills/"
 ```
 
 **Codex**

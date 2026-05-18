@@ -26,7 +26,7 @@ updated: 2026-05-26
 |----|------|--------|------|
 | L1 Schema | `SCHEMA.md` + `AGENTS.md` | 人 + AI 共同迭代 | 规则层，定义项目治理规范 |
 | L2 Flywheel | `/prospect` → `/bid` → `/presales` → `/initiate` → `/plan` → `/monitor` | AI 执行，人验证 | 项目生命周期飞轮 |
-| L2 Ops | `/meeting` → `/change` → `/close` | AI 执行，人验证 | 项目运营飞轮 |
+| L2 Ops | `/meeting` → `/change` → `/payment` → `/close` | AI 执行，人验证 | 项目运营飞轮 |
 | L3 Governance | `/query` + `/lint` | AI 自主扫描 + 人决策 | 项目治理层 |
 | Archive | `线索池/` `投标档案/` `项目库/` `知识库/` | 人拥有，AI 维护 | 结构化项目档案 |
 

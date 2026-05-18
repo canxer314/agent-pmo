@@ -10,7 +10,7 @@ tags:
 <!--
 ⚠️ 回款跟踪文档
 自动创建于 /initiate 立项时
-由 /monitor --action=payments 更新
+由 /payment 更新
 -->
 
 # 回款跟踪 — {项目名}
