@@ -1,9 +1,9 @@
 ---
 title: Project Governance Schema
-version: 4.1
+version: 4.2
 tags:
   - type/schema
-updated: 2026-05-26
+updated: 2026-05-18
 ---
 
 # SCHEMA.md — Project Lifecycle Governance Schema
@@ -13,7 +13,7 @@ updated: 2026-05-26
 > 适用角色：项目经理（交付运营）+ 业务经理（前端经营）+ 售前技术工程师（解决方案）+ 解决方案工程师
 > 使用方式：单人使用，Obsidian + Agent Skills
 >
-> 本系统覆盖从售前对接 → 投标 → 立项 → 执行 → 收尾的全流程，同时支持售前材料管理和需求冻结。
+> 本系统覆盖从售前对接 → 投标 → 立项 → 执行 → 验收 → 收尾的全流程，同时支持售前材料管理、需求冻结和合同管理。
 >
 > **Install**: 把本文件复制到你的 Obsidian vault 根目录。
 > Agent 操作 vault 前会自动读取它。
@@ -26,7 +26,7 @@ updated: 2026-05-26
 |----|------|--------|------|
 | L1 Schema | `SCHEMA.md` + `AGENTS.md` | 人 + AI 共同迭代 | 规则层，定义项目治理规范 |
 | L2 Flywheel | `/prospect` → `/bid` → `/presales` → `/initiate` → `/plan` → `/monitor` | AI 执行，人验证 | 项目生命周期飞轮 |
-| L2 Ops | `/meeting` → `/change` → `/payment` → `/close` | AI 执行，人验证 | 项目运营飞轮 |
+| L2 Ops | `/meeting` → `/change` → `/acceptance` → `/payment` → `/close` | AI 执行，人验证 | 项目运营飞轮 |
 | L3 Governance | `/query` + `/lint` | AI 自主扫描 + 人决策 | 项目治理层 |
 | Archive | `线索池/` `投标档案/` `项目库/` `知识库/` | 人拥有，AI 维护 | 结构化项目档案 |
 
@@ -113,6 +113,7 @@ Vault/
 | `type/project` | `项目库/{项目}/00-项目章程.md` | 项目总览 | `project_id`, `contract_value`, `pm`, `client`, `start_date`, `end_date`, `status` |
 | `type/milestone` | `项目库/{项目}/02-计划/` | 里程碑 | `project`, `planned_date`, `payment_pct`, `completion_pct`, `status` |
 | `type/delivery` | `项目库/{项目}/03-执行/交付物/` | 交付物评审 | `project`, `milestone`, `review_date`, `review_result` |
+| `type/acceptance` | `项目库/{项目}/05-验收/` | 验收报告（阶段验收或终验） | `project`, `acceptance_type`, `acceptance_date`, `acceptance_result`, `non_conformances` |
 | `type/meeting` | `项目库/{项目}/03-执行/会议纪要/` | 会议纪要 | `project`, `meeting_date`, `type`, `participants` |
 | `type/contract` | `项目库/{项目}/01-合同/` | 合同主文档（关键条款、签订记录、履行清单） | `project`, `contract_value`, `sign_date`, `status` |
 | `type/contract-amendment` | `项目库/{项目}/01-合同/补充协议/` | 补充协议 | `project`, `sa_id`, `amendment_date`, `amendment_type`, `impact_amount`, `impact_schedule` |
@@ -205,6 +206,26 @@ not-started → in-progress → done
     ↑_________blocked_________|
 ```
 
+### 验收状态
+
+```
+planned → in-progress → submitted → passed / conditional / failed
+    ↑___________rectifying____________|
+```
+
+| 状态 | 含义 | 触发条件 |
+|------|------|----------|
+| `planned` | 等待验收 | 里程碑完成、准备进入验收阶段 |
+| `in-progress` | 验收中 | `/acceptance action=stage` 或 `action=final` 开始 |
+| `submitted` | 已提交验收报告 | 验收报告创建完成，待用户和客户确认 |
+| `passed` | 验收通过 | 全部交付物符合标准，无不符合项 |
+| `conditional` | 有条件通过 | 存在不影响使用的轻微不符合项，限期内整改后视为通过 |
+| `failed` | 验收不通过 | 存在严重不符合项，需整改后重新验收 |
+| `rectifying` | 整改中 | 不符合项整改进行中，完成后重新提交验收 |
+
+> **流转机制**：`/acceptance` 生成验收报告后，AI 在双提议中建议验收结论（passed / conditional / failed）。用户确认。整改后由 `/acceptance` 重新生成验收报告。
+> 终验 passed 或 conditional 整改闭环后，项目状态流转到 `closing`，触发 `/close`。
+
 ### 变更审批状态
 
 ```
@@ -294,6 +315,10 @@ needs-analysis → solution-drafting → solution-communicating
 | `/contract` action=review | 自动链接 `[[00-项目章程]]` + `[[01-合同/主合同关键条款]]` | 无条件（同项目固定文件名） |
 | `/contract` action=sign | 自动链接 `[[01-合同/主合同关键条款]]` + `[[01-合同/履行义务清单]]`，自动更新项目章程合同签订日期 | 无条件 |
 | `/contract` action=amend | 自动链接 `[[01-合同/主合同关键条款]]` + `[[04-监控/预算执行表]]`（如金额变化）| 无条件（同项目固定文件名） |
+| `/acceptance` action=stage | 自动链接 `[[00-项目章程]]` + `[[02-计划/里程碑-{名称}]]` + `[[01-合同/主合同关键条款]]` | 无条件 |
+| `/acceptance` action=stage | 自动链接里程碑 deliverable 中列出的交付物评审文档 | 交付物评审文档存在 |
+| `/acceptance` action=final | 自动链接 `[[00-项目章程]]` + `[[01-合同/主合同关键条款]]` + `[[02-计划/里程碑计划]]` | 无条件（同项目固定文件名） |
+| `/acceptance` action=final | 自动链接所有 `[[05-验收/阶段验收/]]` 下的验收报告 | 存在阶段验收报告 |
 | `/close` 生成决算报告 | 自动链接 `[[00-项目章程]]` + `[[01-合同/主合同关键条款]]` + `[[04-监控/预算执行表]]` + `[[02-计划/里程碑计划]]` | 无条件（同项目固定文件名） |
 | `/close` 生成项目复盘 | 自动链接 `[[06-收尾/决算报告]]` | 无条件 |
 | `/close` 生成绩效分配记录 | 自动链接 `[[06-收尾/决算报告]]` | 无条件 |
@@ -395,6 +420,11 @@ needs-analysis → solution-drafting → solution-communicating
 | 合同 | 项目 status=executing 但 `01-合同/` 下无签订记录 | 🔴 高 |
 | 合同 | 履行义务清单 `last_review` 超过 30 天未更新 | 🟡 中 |
 | 合同 | 补充协议 SA 编号不连续（如 SA-001, SA-003 缺 SA-002）| 🟢 低 |
+| 验收 | 项目 status=closing 但没有终验报告 | 🔴 高 |
+| 验收 | 阶段验收的不符合项（NC）超过整改期限仍未闭环 | 🟡 中 |
+| 验收 | 里程碑 status=done 但没有对应的阶段验收报告 | 🟡 中 |
+| 验收 | 终验报告存在但阶段验收报告缺失（跳过了阶段验收） | 🟡 中 |
+| 验收 | 终验结论为 passed 但仍有未闭环的不符合项 | 🔴 高 |
 
 ### Lint 写入语义
 
@@ -440,6 +470,7 @@ needs-analysis → solution-drafting → solution-communicating
 | 创建里程碑/计划 | AI 执行（/plan 流程内，用户触发） |
 | 创建会议纪要 | AI 执行（/meeting 流程内） |
 | 创建变更记录 | AI 执行（/change 流程内） |
+| 创建验收报告（/acceptance） | AI 执行（用户触发后） |
 | 创建合同文档（/contract） | AI 执行（用户触发后） |
 | 修改合同条款 | 用户确认（合同数据具有法律审计价值） |
 | 新建文档内加 wikilink | 用户从提议中确认 |
@@ -474,6 +505,8 @@ needs-analysis → solution-drafting → solution-communicating
 | 变更 | `CR-{编号}` | `03-执行/变更记录/CR-001.md` |
 | 支出 | `EXP-{编号}` | `03-执行/支出记录/EXP-001.md` |
 | 交付物评审 | `评审-{交付物名}` | `03-执行/交付物/评审-需求规格说明书.md` |
+| 阶段验收报告 | `验收报告-{里程碑名称}-{日期}` | `05-验收/阶段验收/验收报告-需求确认-2026-06-15.md` |
+| 终验报告 | `终验报告-{日期}` | `05-验收/终验/终验报告-2026-12-01.md` |
 | 风险登记册 | `风险登记册` | `04-监控/风险登记册.md` |
 | 预算执行表 | `预算执行表` | `04-监控/预算执行表.md` |
 | 决算 | `决算报告` | `06-收尾/决算报告.md` |

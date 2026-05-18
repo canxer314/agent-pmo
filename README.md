@@ -30,7 +30,7 @@
 ├─────────────────────────────────────────────────────────┤
 │  L2 Flywheel Layer（生命周期飞轮）                       │
 │  /prospect → /bid → /presales → /initiate → /plan → /contract  │
-│  /meeting → /change → /payment → /close                    │
+│  /meeting → /change → /acceptance → /payment → /close      │
 │  （AI 执行，人验证）                                     │
 ├─────────────────────────────────────────────────────────┤
 │  L3 Governance Layer（治理层）                           │
@@ -68,7 +68,7 @@ Vault/
 
 ---
 
-## 十三个 Skills
+## 十四个 Skills
 
 ### 生命周期飞轮
 
@@ -82,6 +82,7 @@ Vault/
 | `/contract` | 合同管理（审查 + 签订 + 补充协议 + 履约跟踪） | 履行清单 + 签订记录 + 补充协议 |
 | `/meeting` | 会议纪要（执行阶段会议：周例会/启动会/评审会等）| 会议文档 |
 | `/change` | 变更管理 | 变更记录 |
+| `/acceptance` | 验收管理（阶段验收 + 终验 + 不符合项跟踪）| 验收报告 |
 | `/payment` | 回款跟踪 | 回款汇总 + 催款跟踪 |
 | `/close` | 项目收尾 | 决算 + 复盘 |
 
@@ -139,6 +140,11 @@ Vault/
 /contract action=track 履约跟踪
 /payment 跟踪回款节点
     ↓
+↓ 验收阶段 ↓
+/acceptance action=stage 里程碑达到，启动阶段验收
+    ↓（不符合项整改后重新验收）↓
+/acceptance action=final 全部里程碑完成，启动终验
+    ↓
 /close 项目收尾
 ```
 
@@ -159,14 +165,14 @@ cd knowledge-mgmt
 
 ```bash
 mkdir -p "$HOME/.claude/skills"
-cp -r prospect bid presales initiate plan contract meeting change monitor payment query lint "$HOME/.claude/skills/"
+cp -r prospect bid presales initiate plan contract meeting change acceptance monitor payment query lint "$HOME/.claude/skills/"
 ```
 
 **Codex**
 
 ```bash
 mkdir -p "$HOME/.agents/skills"
-cp -r prospect bid initiate plan contract meeting change monitor query lint "$HOME/.agents/skills/"
+cp -r prospect bid initiate plan contract meeting change acceptance monitor query lint "$HOME/.agents/skills/"
 ```
 
 ### 3. 安装 SCHEMA + AGENTS 到 Obsidian Vault
