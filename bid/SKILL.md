@@ -34,7 +34,7 @@ arguments:
 /presales（首次需求对接 → 更新客户需求分析）
 /presales（方案成形 → 更新解决方案）
 /presales action=material（材料版本管理）
-/meeting type=tech-exchange（技术交流）
+/presales action=tech-exchange（技术交流）
     ↓（循环迭代）↓
 /presales action=lock（锁定需求）
     ↓
@@ -56,7 +56,7 @@ arguments:
 | `needs-analysis` | 需求调研中 | `/bid action=new` 后 | — |
 | `solution-drafting` | 方案编写中 | 首次更新 `解决方案.md` | `/presales` |
 | `solution-communicating` | 方案已发客户 | 材料标记已发客户后 | `/presales` |
-| `tech-exchange-loop` | 技术交流迭代中 | 技术交流完成后 | `/meeting` |
+| `tech-exchange-loop` | 技术交流迭代中 | 技术交流完成后 | `/presales` |
 | `requirement-locked` | 需求已冻结 | 需求冻结确认书创建后 | `/presales` |
 | `priced` | 已定价 | 更新 `商务报价.md`（lock 之后） | `/bid` |
 | `submitted` | 已递交标书 | 用户确认标书已递交 | `/bid` |
@@ -108,13 +108,13 @@ obsidian files folder="线索池"
 3. `商务报价.md`
 4. `投标结果.md`
 
-**共享子目录**（由 `/bid` 创建，`/presales` 和 `/meeting` 使用）：
+**共享子目录**（由 `/bid` 创建，`/presales` 使用）：
 
 ```
 投标档案/投标-{客户}-{主题}-{日期}/
 ├── 售前材料/              ← /presales 使用
 │   └── .gitkeep
-├── 技术交流记录/          ← /meeting 使用
+├── 技术交流记录/          ← /presales 使用
 │   └── .gitkeep
 ├── 需求冻结/              ← /presales 使用
 │   └── .gitkeep
@@ -452,7 +452,7 @@ obsidian create path="知识库/竞品/{中标单位}.md" content="..."
 
 - `/bid action=new` 创建投标档案骨架（4 个核心文档 + 3 个共享子目录），不创建售前文档
 - 售前文档（客户需求分析、解决方案、售前材料清单）由 `/presales` 管理
-- 技术交流记录由 `/meeting type=tech-exchange` 管理
+- 技术交流记录由 `/presales action=tech-exchange` 管理
 - 需求锁定由 `/presales action=lock` 完成，锁定后回到 `/bid` 进入商务报价阶段
 - 一个线索可能对应多次投标（如初投未中，二次招标）
 - 报价关键数字将在 `/initiate` 立项时同步到项目预算

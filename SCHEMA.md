@@ -41,7 +41,7 @@ Vault/
 ├── 线索池/                       # 业务经理：售前线索
 │   ├── 线索-{客户}-{主题}.md
 │   └── 已转化/                   # 已立项的线索
-├── 投标档案/                     # 投标过程留痕（投标核心 + /presales 售前文档 + /meeting 技术交流）
+├── 投标档案/                     # 投标过程留痕（投标核心 + /presales 售前文档 + 技术交流）
 │   └── 投标-{客户}-{主题}-{日期}/
 │       ├── 招标要求.md
 │       ├── 客户需求分析.md        # 售前：客户痛点、决策链、技术约束
@@ -221,7 +221,7 @@ needs-analysis → solution-drafting → solution-communicating
 | `needs-analysis` | 需求调研中 | `/bid action=new` 创建投标档案后 |
 | `solution-drafting` | 方案编写中 | 首次更新 `解决方案.md` 内容 |
 | `solution-communicating` | 方案已发给客户 | `/presales action=material` 标记材料已发客户 |
-| `tech-exchange-loop` | 技术交流迭代中 | `/meeting type=tech-exchange` 完成后 |
+| `tech-exchange-loop` | 技术交流迭代中 | `/presales action=tech-exchange` 完成后 |
 | `requirement-locked` | 需求已冻结 | `/presales action=lock` 完成 |
 | `priced` | 已定价 | 更新 `商务报价.md`（lock 之后） |
 | `submitted` | 已递交标书 | 用户确认标书已递交 |
@@ -267,8 +267,8 @@ needs-analysis → solution-drafting → solution-communicating
 | `/plan` 里程碑有付款节点 | 自动链接 `[[01-合同/主合同关键条款]]` | `payment_pct > 0` |
 | `/meeting` 创建执行阶段纪要 | 自动链接 `[[00-项目章程]]` | 无条件 |
 | `/meeting` type=kickoff | 自动链接 `[[02-计划/里程碑计划]]` | type=kickoff |
-| `/meeting` type=tech-exchange | 自动链接 `[[解决方案]]` + `[[客户需求分析]]` | 目标文件存在 |
-| `/meeting` PoC 记录 | 自动链接 `[[解决方案]]` + `[[客户需求分析]]`（PoC 验证对象和用例来源） | 无条件 |
+| `/presales` action=tech-exchange | 自动链接 `[[解决方案]]` + `[[客户需求分析]]` | 目标文件存在 |
+| `/presales` action=tech-exchange PoC 记录 | 自动链接 `[[解决方案]]` + `[[客户需求分析]]`（PoC 验证对象和用例来源） | 无条件 |
 | `/change` 创建变更 | 自动链接 `[[预算执行表]]` 和受影响里程碑 | 无条件 |
 | `/change` 来源为会议 | 自动链接来源 `[[会议纪要-{date}]]` | source=meeting |
 | `/close` 生成决算报告 | 自动链接 `[[00-项目章程]]` + `[[01-合同/主合同关键条款]]` + `[[04-监控/预算执行表]]` + `[[02-计划/里程碑计划]]` | 无条件（同项目固定文件名） |
