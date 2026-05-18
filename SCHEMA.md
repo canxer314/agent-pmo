@@ -25,7 +25,7 @@ updated: 2026-05-26
 | 层 | 目录 | 所有权 | 说明 |
 |----|------|--------|------|
 | L1 Schema | `SCHEMA.md` + `AGENTS.md` | 人 + AI 共同迭代 | 规则层，定义项目治理规范 |
-| L2 Flywheel | `/prospect` → `/bid` → `/initiate` → `/plan` → `/monitor` | AI 执行，人验证 | 项目生命周期飞轮 |
+| L2 Flywheel | `/prospect` → `/bid` → `/presales` → `/initiate` → `/plan` → `/monitor` | AI 执行，人验证 | 项目生命周期飞轮 |
 | L2 Ops | `/meeting` → `/change` → `/close` | AI 执行，人验证 | 项目运营飞轮 |
 | L3 Governance | `/query` + `/lint` | AI 自主扫描 + 人决策 | 项目治理层 |
 | Archive | `线索池/` `投标档案/` `项目库/` `知识库/` | 人拥有，AI 维护 | 结构化项目档案 |
@@ -41,7 +41,7 @@ Vault/
 ├── 线索池/                       # 业务经理：售前线索
 │   ├── 线索-{客户}-{主题}.md
 │   └── 已转化/                   # 已立项的线索
-├── 投标档案/                     # 投标过程留痕（含售前工作台）
+├── 投标档案/                     # 投标过程留痕（投标核心 + /presales 售前文档 + /meeting 技术交流）
 │   └── 投标-{客户}-{主题}-{日期}/
 │       ├── 招标要求.md
 │       ├── 客户需求分析.md        # 售前：客户痛点、决策链、技术约束
@@ -109,7 +109,7 @@ Vault/
 | type 标签 | 存储位置 | 说明 | 必填 frontmatter |
 |-----------|----------|------|------------------|
 | `type/prospect` | `线索池/` | 售前线索 | `stage`, `estimated_value`, `expected_date`, `owner` |
-| `type/bid` | `投标档案/` | 投标档案（含售前工作台） | `bid_date`, `budget_price`, `status` |
+| `type/bid` | `投标档案/` | 投标档案（投标核心文档 + 售前文档 + 技术交流记录） | `bid_date`, `budget_price`, `status` |
 | `type/project` | `项目库/{项目}/00-项目章程.md` | 项目总览 | `project_id`, `contract_value`, `pm`, `client`, `start_date`, `end_date`, `status` |
 | `type/milestone` | `项目库/{项目}/02-计划/` | 里程碑 | `project`, `planned_date`, `payment_pct`, `completion_pct`, `status` |
 | `type/delivery` | `项目库/{项目}/03-执行/交付物/` | 交付物评审 | `project`, `milestone`, `review_date`, `review_result` |
@@ -220,9 +220,9 @@ needs-analysis → solution-drafting → solution-communicating
 |------|------|----------|
 | `needs-analysis` | 需求调研中 | `/bid action=new` 创建投标档案后 |
 | `solution-drafting` | 方案编写中 | 首次更新 `解决方案.md` 内容 |
-| `solution-communicating` | 方案已发给客户 | `/bid action=material` 标记材料已发客户 |
+| `solution-communicating` | 方案已发给客户 | `/presales action=material` 标记材料已发客户 |
 | `tech-exchange-loop` | 技术交流迭代中 | `/meeting type=tech-exchange` 完成后 |
-| `requirement-locked` | 需求已冻结 | `/bid action=lock` 完成 |
+| `requirement-locked` | 需求已冻结 | `/presales action=lock` 完成 |
 | `priced` | 已定价 | 更新 `商务报价.md`（lock 之后） |
 | `submitted` | 已递交标书 | 用户确认标书已递交 |
 | `won` / `lost` | 中标/未中标 | `/bid action=result` 完成 |
@@ -261,7 +261,7 @@ needs-analysis → solution-drafting → solution-communicating
 | `/initiate` 从投标创建 | 自动链接来源 `[[投标档案/.../投标结果]]` | bid 参数已提供 |
 | `/bid` 从线索创建 | 自动链接来源 `[[线索-{client}-{topic}]]` | prospect 参数已提供 |
 | `/bid` 创建投标 | 自动链接 `[[客户档案-{client}]]` | 档案存在 |
-| `/bid` action=lock | 自动在需求冻结确认书中链接 `[[解决方案]]` + `[[客户需求分析]]` | 无条件（同投标文件夹） |
+| `/presales` action=lock | 自动在需求冻结确认书中链接 `[[解决方案]]` + `[[客户需求分析]]` | 无条件（同投标文件夹） |
 | `/plan` 创建里程碑 | 自动在里程碑中链接 `[[00-项目章程]]` | 无条件 |
 | `/plan` 创建里程碑 | 自动链接 `[[02-计划/里程碑计划]]`（索引页） | 无条件 |
 | `/plan` 里程碑有付款节点 | 自动链接 `[[01-合同/主合同关键条款]]` | `payment_pct > 0` |

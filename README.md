@@ -46,7 +46,7 @@ Vault/
 ├── SCHEMA.md                    # 本文件
 ├── AGENTS.md                    # Agent 操作规则
 ├── 线索池/                       # 业务经理：售前线索
-├── 投标档案/                     # 投标过程 + 售前工作台
+├── 投标档案/                     # 投标过程留痕（/bid + /presales + /meeting）
 ├── 项目库/                       # 正式立项后的项目（核心）
 │   └── {PJ-YYYY-NNN}/
 │       ├── 00-项目章程.md
@@ -64,14 +64,15 @@ Vault/
 
 ---
 
-## 十个 Skills
+## 十一个 Skills
 
 ### 生命周期飞轮
 
 | Skill | 职责 | 输出 |
 |-------|------|------|
 | `/prospect` | 线索管理 | 线索文档 |
-| `/bid` | 投标管理 + 售前工作台 | 投标档案文件夹 |
+| `/bid` | 投标管理（建档 + 技术方案 + 商务报价 + 结果）| 投标档案骨架 |
+| `/presales` | 售前工作台（需求分析 + 方案迭代 + 材料管理 + 需求冻结）| 售前文档 |
 | `/initiate` | 项目立项（唯一创建项目结构的通道） | 项目文件夹 + 章程 |
 | `/plan` | 计划制定 | WBS + 里程碑 |
 | `/meeting` | 会议纪要（售前技术交流 / 执行阶段会议） | 会议文档 |
@@ -95,17 +96,17 @@ Vault/
 ```
 /prospect 线索推进到方案沟通
     ↓
-/bid 创建投标档案（action=new）
+/bid action=new（创建投标档案骨架）
     ↓
 ↓ 售前阶段（循环迭代）↓
-/bid 更新「客户需求分析」（首次需求对接）
-/bid 更新「解决方案」（方案成形）
-/bid action=material（材料版本管理）
+/presales 更新「客户需求分析」（首次需求对接）
+/presales 更新「解决方案」（方案成形）
+/presales action=material（材料版本管理）
 /meeting 记录技术交流（售前阶段）
     ↓
-/bid action=lock（锁定合同内容）
+/presales action=lock（锁定合同内容）
     ↓
-/bid 更新「商务报价」
+/bid action=update（更新商务报价）
     ↓
 /bid action=result（记录投标结果）
     ↓
