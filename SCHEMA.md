@@ -44,8 +44,8 @@ Vault/
 ├── 投标档案/                     # 投标过程留痕（含售前工作台）
 │   └── 投标-{客户}-{主题}-{日期}/
 │       ├── 招标要求.md
-│       ├── customer-needs-analysis.md        # 售前：客户痛点、决策链、技术约束
-│       ├── solution.md            # 售前：定制化方案思路
+│       ├── 客户需求分析.md        # 售前：客户痛点、决策链、技术约束
+│       ├── 解决方案.md            # 售前：定制化方案思路
 │       ├── 技术方案.md
 │       ├── 商务报价.md
 │       ├── 投标结果.md
@@ -179,6 +179,26 @@ not-started → in-progress → done
 ```
 draft → submitted → under-review → approved/rejected → implemented
 ```
+
+### 投标状态（通过双提议确认流转，不由 AI 静默推导）
+
+```
+needs-analysis → solution-drafting → solution-communicating
+    → tech-exchange-loop → requirement-locked → priced → submitted → won/lost
+```
+
+| 状态 | 含义 | 触发条件 |
+|------|------|----------|
+| `needs-analysis` | 需求调研中 | `/bid action=new` 创建投标档案后 |
+| `solution-drafting` | 方案编写中 | 首次更新 `解决方案.md` 内容 |
+| `solution-communicating` | 方案已发给客户 | `/bid action=material` 标记材料已发客户 |
+| `tech-exchange-loop` | 技术交流迭代中 | `/meeting type=tech-exchange` 完成后 |
+| `requirement-locked` | 需求已冻结 | `/bid action=lock` 完成 |
+| `priced` | 已定价 | 更新 `商务报价.md`（lock 之后） |
+| `submitted` | 已递交标书 | 用户确认标书已递交 |
+| `won` / `lost` | 中标/未中标 | `/bid action=result` 完成 |
+
+> **状态流转机制**：AI 读取投标档案中已有文件推导当前状态，在对应 Skill 的双提议中建议下一状态。用户确认或纠正。AI 不静默修改状态字段。
 
 ---
 
@@ -320,6 +340,10 @@ draft → submitted → under-review → approved/rejected → implemented
 | 客户历史 | 读客户档案 → 搜索关联项目 |
 | 投标成功率 | 统计线索池 + 投标档案 |
 | 类似项目参考 | 按 domain 标签搜索 → 读复盘/经验教训 |
+| **竞品丢标分析** | 扫描所有 `投标结果.md`（status=lost）→ 提取中标单位 → 按竞品统计丢标次数和金额 |
+| **方案模式胜率** | 扫描 `解决方案.md`（提取自研/集成/纯服务模式） → 交叉比对 `投标结果.md` 的 won/lost |
+| **报价区间胜率** | 扫描 `商务报价.md` 和 `投标结果.md` → 按报价区间（如 100-300万 / 300-500万 / 500万+）统计胜率 |
+| **售前管道健康度** | 扫描所有 `投标档案/` → 按派生状态分组 → 识别卡在某状态超 30 天的投标 |
 
 ---
 
@@ -365,11 +389,11 @@ draft → submitted → under-review → approved/rejected → implemented
 | 客户档案 | `{客户官方名称}` | `客户档案/某市人民政府.md` |
 | 供应商 | `{供应商名}` | `供应商库/某科技公司.md` |
 | 经验教训 | `{主题}-经验教训` | `知识库/经验教训/需求变更处理-经验教训.md` |
-| 客户需求分析 | `customer-needs-analysis` | `投标档案/.../customer-needs-analysis.md` |
-| 解决方案 | `solution` | `投标档案/.../solution.md` |
-| 售前材料清单 | `presales-material-list` | `投标档案/.../presales-material-list.md` |
-| 技术交流记录 | `technical-exchange-record-{日期}` | `投标档案/.../技术交流记录/YYYY-MM-DD.md` |
-| 需求冻结确认书 | `requirement-lock-confirmation` | `投标档案/.../需求冻结/requirement-lock-confirmation.md` |
+| 客户需求分析 | `客户需求分析` | `投标档案/.../客户需求分析.md` |
+| 解决方案 | `解决方案` | `投标档案/.../解决方案.md` |
+| 售前材料清单 | `售前材料清单` | `投标档案/.../售前材料清单.md` |
+| 技术交流记录 | `技术交流记录-{日期}` | `投标档案/.../技术交流记录/YYYY-MM-DD.md` |
+| 需求冻结确认书 | `需求冻结确认书` | `投标档案/.../需求冻结/需求冻结确认书.md` |
 
 ### 项目编号规则
 

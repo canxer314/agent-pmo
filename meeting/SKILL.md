@@ -52,8 +52,8 @@ arguments:
 
 ```bash
 # 如提供 bid 参数，读取投标档案上下文
-obsidian read path="投标档案/{bid}/customer-needs-analysis.md"
-obsidian read path="投标档案/{bid}/solution.md"
+obsidian read path="投标档案/{bid}/客户需求分析.md"
+obsidian read path="投标档案/{bid}/解决方案.md"
 ```
 
 收集信息：
@@ -226,16 +226,22 @@ tags:
 
 ```markdown
 提议 1 — 关联建议：
-1. [[投标档案/{bid}/customer-needs-analysis]] — 如有新增需求更新
-2. [[投标档案/{bid}/solution]] — 如有方案调整更新
-3. [[投标档案/{bid}/presales-material-list]] — 材料版本记录
+1. [[投标档案/{bid}/客户需求分析]] — 如有新增需求更新
+2. [[投标档案/{bid}/解决方案]] — 如有方案调整更新
+3. [[投标档案/{bid}/售前材料清单]] — 材料版本记录
 
 提议 2 — 后续行动建议：
-1. 本次交流的客户反馈是否需要更新到「customer-needs-analysis」？
-2. 是否需要更新「solution」版本记录？
-3. 是否需要更新「presales-material-list」中的材料版本？
+1. 本次交流的客户反馈是否需要更新到「客户需求分析」？
+2. 是否需要更新「解决方案」版本记录？
+3. 是否需要更新「售前材料清单」中的材料版本？
 
-请回复编号确认，或"跳过"
+🏷️ 投标状态建议：→ tech-exchange-loop
+
+提议 3 — 知识沉淀：
+1. 本次交流中是否有值得沉淀为标准回应的技术问题或异议处理？
+   → 如确认，写入 知识库/技术答疑/{主题}.md，后续 /query 可搜索复用
+
+请回复编号确认，或纠正状态，或"跳过"
 ```
 
 #### 执行阶段会议的双提议
@@ -266,11 +272,11 @@ obsidian create path="投标档案/{bid}/技术交流记录/YYYY-MM-DD.md" conte
 
 ```bash
 # 更新客户需求分析（如有新增）
-obsidian read path="投标档案/{bid}/customer-needs-analysis.md"
+obsidian read path="投标档案/{bid}/客户需求分析.md"
 # 追加新需求
 
 # 更新售前材料清单
-obsidian read path="投标档案/{bid}/presales-material-list.md"
+obsidian read path="投标档案/{bid}/售前材料清单.md"
 # 记录本次材料版本
 ```
 

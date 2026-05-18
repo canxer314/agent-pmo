@@ -38,6 +38,7 @@ arguments:
 | `health`（默认）| 生成指定项目的健康报告 |
 | `dashboard` | 更新 `个人工作台/今日关注.md` |
 | `payments` | 回款跟踪汇总视图 |
+| `presales` | 售前管道健康检查 — 扫描所有投标档案，展示各投标状态和卡顿项 |
 | `cron` | 定时扫描所有活跃项目，静默更新工作台 |
 
 ### Step 1: 扫描项目文件
@@ -412,6 +413,79 @@ obsidian create path="项目库/{project}/04-监控/payment-tracking.md" content
 如 action=payments，展示汇总视图（方案A）。
 
 如需创建/更新回款跟踪文档（方案B），确认后执行。
+
+---
+
+### Step 7: 售前管道健康检查（action=presales）
+
+#### 7a. 扫描所有投标档案
+
+```bash
+obsidian files folder="投标档案"
+```
+
+筛选所有未标记 won/lost 的投标（即 pipeline 中的活跃投标）。
+
+#### 7b. 推导各投标状态
+
+对每个活跃投标，读取已有文件推导当前状态（按 SCHEMA.md §4 投标状态定义）：
+
+```bash
+for bid in 投标档案/*/; do
+  obsidian files folder="$bid"  # 列出该投标下所有文件
+done
+```
+
+- 存在 `客户需求分析.md`（有内容）但无 `解决方案.md` → `needs-analysis`
+- 存在 `解决方案.md`（有内容）→ `solution-drafting`
+- 存在 `售前材料清单.md`（有发给客户的记录）→ `solution-communicating`
+- 存在 `技术交流记录/` 下有文件 → `tech-exchange-loop`
+- 存在 `需求冻结/需求冻结确认书.md` → `requirement-locked`
+- 存在 `商务报价.md`（lock 之后更新）→ `priced`
+- 存在 `投标结果.md`（有 won/lost）→ `won` 或 `lost`
+
+> 状态推导结果在输出中展示，不作为双提议——用户可在后续操作中纠正。
+
+#### 7c. 生成售前管道视图
+
+```markdown
+# 售前管道健康 — YYYY-MM-DD
+
+## 管道总览
+
+| 状态 | 投标数 | 总预估金额 |
+|------|--------|-----------|
+| needs-analysis | {N} | {sum} 万 |
+| solution-drafting | {N} | {sum} 万 |
+| solution-communicating | {N} | {sum} 万 |
+| tech-exchange-loop | {N} | {sum} 万 |
+| requirement-locked | {N} | {sum} 万 |
+| priced | {N} | {sum} 万 |
+| submitted | {N} | {sum} 万 |
+
+## 🔴 卡顿预警（超过 30 天未推进）
+
+| 投标 | 当前状态 | 滞留天数 | 最近活动 | 建议行动 |
+|------|----------|----------|----------|----------|
+| 投标-某客户-某主题-2026-03 | solution-communicating | 45天 | 上次技术交流 03-31 | 跟进客户反馈 |
+
+## 🟡 近期无活动（14 天无交流记录或材料更新）
+
+| 投标 | 当前状态 | 静默天数 | 建议行动 |
+|------|----------|----------|----------|
+| | | | |
+
+## 📊 本周待推动
+
+- {投标A}：下次技术交流 {日期}
+- {投标B}：商务报价待审批
+```
+
+#### 7d. 输出
+
+管道视图直接输出到对话中，不写入 vault（除非用户要求）。
+
+如用户要求，可更新 `个人工作台/今日关注.md` 的售前相关 section。
 
 ---
 
