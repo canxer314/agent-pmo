@@ -1,10 +1,10 @@
 # Knowledge MEMO — Project Lifecycle Management System
 
-> **个人项目全生命周期绩效运营系统**
+> **面向售前 + 解决方案 + 项目管理的全生命周期运营系统**
 >
-> 适用角色：项目经理（交付运营）+ 业务经理（前端经营）+ 售前技术工程师（解决方案）+ 解决方案工程师
+> 适用角色：售前技术工程师（解决方案）+ 项目经理（交付运营）+ 业务经理（前端经营）
 >
-> 本系统覆盖从售前对接 → 投标 → 立项 → 执行 → 收尾的全流程，同时支持售前材料管理和需求锁定。
+> 本系统覆盖从售前对接 → 投标 → 方案迭代 → 立项 → 合同 → 执行 → 验收 → 回款 → 收尾的全流程，以 AI Agent 为执行引擎、Obsidian Vault 为数据中枢。
 
 ---
 
@@ -166,7 +166,7 @@ Vault/
 ### 1. 克隆
 
 ```bash
-git clone https://github.com/owenliang60-ship-it/knowledge-mgmt.git
+git clone https://github.com/canxer314/knowledge-mgmt.git
 cd knowledge-mgmt
 ```
 

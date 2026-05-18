@@ -17,7 +17,7 @@ aliases:
 - 做创业的 MOC 也许按"初创期 / 增长期 / 死亡案例"分区
 - 做设计的 MOC 也许按"草图 / 原型 / 成品 / 复盘"分区
 请 fork 改造，而不是原样使用。
-参见: docs/philosophy.md § "知识管理是高度个人化的"
+参见: docs/philosophy.md § "导入别人的模版就能管好自己的项目"
 -->
 
 # MOC — {{Domain 中文名}}

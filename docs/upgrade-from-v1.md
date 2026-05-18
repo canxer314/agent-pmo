@@ -1,179 +1,142 @@
-# Upgrading from v1 to v2
+# 从上游仓库同步更新
 
-> **TL;DR**: Run the migration script first, then copy the new skills into your agent runtime.
->
-> ```bash
-> python3 review/scripts/migrate_v1_to_v2.py /path/to/your/obsidian/vault
->
-> # Claude Code
-> cp -r read insights note review query lint "$HOME/.claude/skills/"
->
-> # Codex
-> cp -r read insights note review query lint "$HOME/.agents/skills/"
->
-> cp SCHEMA.md AGENTS.md /path/to/your/vault/
-> ```
+> 本指南适用于从 `owenliang60-ship-it/knowledge-mgmt` fork 并做了定制修改的用户。
 
 ---
 
-## What changed in v2
+## 背景
 
-### Breaking changes
-
-1. **`/review` identification**
-   - v1: atomic cards identified by `【】` in H1 title line
-   - v2: atomic cards identified by `type/atomic` tag in frontmatter
-   - **Impact**: Your v1 cards will silently disappear from `/review` until you migrate. The cards themselves are untouched — only `/review` no longer sees them.
-
-2. **`/note` workflow**
-   - v1: auto-creates atomic cards from extracted key points
-   - v2: **dual-proposal** — proposes wikilinks and atomic cards for you to confirm interactively
-   - **Impact**: `/note` is now more chatty. This is intentional — "human must stay in the loop" is a core v2 principle (see [`docs/philosophy.md`](./philosophy.md)).
-
-### Additions
-
-- **`SCHEMA.md`** + **`AGENTS.md`** — new schema/rules layer (aligned with Karpathy LLM Wiki)
-- **`/query`** — new skill to query vault knowledge via MOC + keyword search
-- **`/lint`** — new skill for vault health checks (broken links / orphans / gaps)
-- **Card templates** (`templates/cards/*.md`) — 8 minimal templates with fork-me disclaimers
-- **MOC template** (`templates/moc/domain-moc.md`)
-- **Demo gallery** (`demo/`) — author's real vault samples across neuroscience / investing / consciousness / molecular biology
+本仓库 fork 自 [owenliang60-ship-it/knowledge-mgmt](https://github.com/owenliang60-ship-it/knowledge-mgmt)，并针对 **售前 + 解决方案 + 项目管理** 场景做了适配。上游仓库会持续更新（新增 Skills、修复 bug、优化 Schema），本指南说明如何将上游更新合并到你的 fork 中。
 
 ---
 
-## Migration steps
+## 前置检查
 
-### 1. Run the migration script (MOST IMPORTANT)
-
-This is the only breaking-change fix. **Do it before upgrading the `/review` skill**, otherwise your v1 cards become invisible to `/review`.
+### 确认 remote 配置
 
 ```bash
-cd knowledge-mgmt
-
-# Preview first — shows what would change without writing anything
-python3 review/scripts/migrate_v1_to_v2.py /path/to/your/obsidian/vault --dry-run
-
-# Real run
-python3 review/scripts/migrate_v1_to_v2.py /path/to/your/obsidian/vault
+git remote -v
 ```
 
-**What it does**:
-- Walks your vault recursively, finds all `.md` files
-- For each file whose first H1 line contains `【】`, adds `type/atomic` to its frontmatter tags
-- Handles 3 edge cases: no frontmatter, frontmatter without `tags` field, inline-style `tags: [a, b]`
-- **Idempotent**: running twice adds nothing
-- **Never touches card body** — only the frontmatter region
+应包含：
+- `origin` → 你的 fork（`canxer314/knowledge-mgmt`）
+- `upstream` → 上游仓库（如尚未添加，见下方）
 
-**Safety notes**:
-- Use `--dry-run` first. Read the output before committing.
-- If your vault is under git, commit clean state first so you can easily diff or rollback.
-- The script is stdlib-only Python (no PyYAML) — the same philosophy as `fsrs_engine.py`.
-
-### 2. Install v2 skills
-
-**Claude Code**
+### 添加上游 remote（如尚未配置）
 
 ```bash
-cp -r read insights note review query lint "$HOME/.claude/skills/"
+git remote add upstream https://github.com/owenliang60-ship-it/knowledge-mgmt.git
+git fetch upstream
 ```
-
-**Codex**
-
-```bash
-cp -r read insights note review query lint "$HOME/.agents/skills/"
-```
-
-Note: v2 adds two new skill directories (`query`, `lint`). You may want to back up your skill directory first if you have custom modifications.
-
-### 3. Install SCHEMA and AGENTS at your vault root
-
-```bash
-cp SCHEMA.md AGENTS.md /path/to/your/obsidian/vault/
-```
-
-If you use **Claude Code**, also add a small `CLAUDE.md` bridge so the same vault rules are visible there:
-
-```bash
-cat > /path/to/your/obsidian/vault/CLAUDE.md <<'EOF'
-Read AGENTS.md before operating this vault.
-EOF
-```
-
-If you use **Codex**, launch it from your vault root (or a subdirectory inside that vault) so the copied `AGENTS.md` is visible to the runtime.
-
-**Then customize them** for your domain. The author's versions are samples from neuroscience / investing / consciousness / molecular biology. You almost certainly need different Card types, a different tag scheme, or a different permission matrix. See [`CONTRIBUTING.md`](../CONTRIBUTING.md) § "Fork, Don't Consume".
-
-### 4. (Optional) Install templates
-
-```bash
-cp -r templates /path/to/your/obsidian/vault/
-```
-
-Templates are reference — not authority. Expect to rewrite them to match how you actually think.
-
-### 5. (Optional) Configure state file path
-
-By default, `/review` stores FSRS state next to the installed skill:
-
-- Claude Code: `~/.claude/skills/review/review_state.json`
-- Codex: `~/.agents/skills/review/review_state.json`
-
-If you want to put it elsewhere (e.g., in a cloud-synced directory to share across machines), export the env var:
-
-```bash
-# Add to your shell profile (.zshrc / .bashrc)
-export KM_REVIEW_STATE_PATH="$HOME/Dropbox/km/review_state.json"
-```
-
-All `/review` calls will use that path automatically.
-
-### 6. Verify
-
-Run a scan to confirm your old cards are detected:
-
-**Claude Code**
-
-```
-/review --mode=scan
-```
-
-**Codex**
-
-```
-$review --mode=scan
-```
-
-You should see your migrated cards being registered into FSRS. If the count is zero or much lower than expected, the migration didn't reach them — rerun with `--dry-run` on your vault to see which files were skipped.
 
 ---
 
-## Rollback
+## 同步流程
 
-If anything breaks, every v1 file is still at the `v1.0.0` git tag:
+### 1. 确保本地工作区干净
 
 ```bash
-# Clone a fresh copy of v1 into a separate directory
-git clone --branch v1.0.0 https://github.com/owenliang60-ship-it/knowledge-mgmt.git ~/knowledge-mgmt-v1
-
-# Claude Code
-cp -r ~/knowledge-mgmt-v1/{read,insights,note,review} "$HOME/.claude/skills/"
-
-# Codex
-cp -r ~/knowledge-mgmt-v1/{read,insights,note,review} "$HOME/.agents/skills/"
+git status
 ```
 
-Note that v2 added `query/` and `lint/` — after rollback you won't have them, but the 4 original skills go back to v1 behavior exactly.
+如有未提交的修改，先 stash 或 commit。
 
-Your vault itself is unchanged by rollback. The migration script only added frontmatter tags; those tags are harmless when `/review` (v1) doesn't look at them.
+### 2. 拉取上游更新
+
+```bash
+git fetch upstream
+git checkout main
+git merge upstream/main
+```
+
+### 3. 处理冲突
+
+上游更新可能与你的定制修改产生冲突。以下是常见的冲突场景及处理建议：
+
+| 冲突文件 | 上游可能做了什么 | 你的处理策略 |
+|----------|-----------------|-------------|
+| `SCHEMA.md` | 新增 Card 类型、调整状态流转 | 仔细对比，保留你的定制部分（命名规范、目录结构），合并上游新增的类型定义 |
+| `AGENTS.md` | 新增铁律、调整写入纪律 | 通常直接采用上游更新，铁律是底线规范 |
+| `README.md` | 更新 Skill 列表、工作流说明 | 保留你的角色描述和 URL，合并上游新增的 Skill 说明 |
+| `templates/cards/*.md` | 新增模板或修改 frontmatter | 对比差异，选择性合并——模板是你已经定制过的 |
+| 新 Skill 目录 | 上游新增了独立 Skill | 直接合并，然后根据你的场景决定是否启用 |
+| `docs/*.md` | 上游更新文档 | 你已重写了 docs/，需要手动阅读上游新文档，选择性采纳内容 |
+| `*.SKILL.md` 内部 | 上游修改了 Skill 行为逻辑 | **重点审查**——这是核心执行逻辑，合并后需要重新测试 |
+
+### 4. 重新安装 Skills
+
+上游更新了 Skill 文件后，需要重新复制到 Claude Code 的 skills 目录：
+
+```bash
+cp -r prospect bid presales initiate plan contract meeting change acceptance work-item monitor payment query lint "$HOME/.claude/skills/"
+```
+
+### 5. 验证同步后的系统健康
+
+```bash
+# 在 Claude Code 中运行体检
+/lint
+```
+
+确认没有因合并引入的结构性问题。
 
 ---
 
-## Support
+## 冲突预防策略
 
-Open an issue: https://github.com/owenliang60-ship-it/knowledge-mgmt/issues
+### 最小化定制文件的范围
 
-Please include:
-- Which step failed
-- The exact command you ran
-- Output of `python3 --version` and the dry-run summary
-- A fixture file demonstrating the problem (if possible, redact private content)
+以下文件是你**应该定制**的（上游不太可能改，或改了你也应该覆盖）：
+- `CLAUDE.md`、`CLAUDE-bridge.md`、`AGENTS.md` 中的个人偏好部分
+- `SCHEMA.md` 中的命名规范和目录结构
+
+以下文件**尽量保持与上游一致**（减少合并冲突）：
+- 各 `SKILL.md` 核心执行逻辑
+- Card 类型定义体系
+- 状态流转规则
+
+### 记录你的定制决策
+
+建议在每次同步后记录：
+
+```markdown
+## 同步记录
+
+- YYYY-MM-DD：从 upstream/main 合并至 {commit-hash}
+  - 采纳：新增 /work-item Skill、验收状态流转优化
+  - 保留我的版本：docs/philosophy.md（已完全重写为项目治理哲学）
+  - 冲突处理：SCHEMA.md 中合同状态定义有冲突，合并后以我的版本为主
+```
+
+---
+
+## 常见问题
+
+### Q: 上游的更新和我的定制冲突太多怎么办？
+
+A: 选择性合并而非全量 merge。用 `git cherry-pick` 只拿你需要的 commit。或者阅读上游的变更 diff，手动将逻辑应用到你的版本中。
+
+### Q: 我的 docs/ 已经全部重写了，上游 docs/ 更新怎么处理？
+
+A: 阅读上游新的 docs/ 内容（不直接 merge），手动提取对你有用的部分，写入你的版本。
+
+### Q: 上游新增了一个 Skill 但我用不上？
+
+A: 仍然合并代码（保持 git 历史干净），但不复制到 `~/.claude/skills/`。Skill 未安装就不会被触发。
+
+---
+
+## 回退
+
+如果同步后系统行为异常：
+
+```bash
+git reflog                    # 找到合并前的 commit
+git reset --hard <commit>     # 回退到合并前
+```
+
+重新安装回退后的 Skills：
+
+```bash
+cp -r prospect bid presales initiate plan contract meeting change acceptance work-item monitor payment query lint "$HOME/.claude/skills/"
+```

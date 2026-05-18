@@ -1,130 +1,103 @@
-# Philosophy
+# 项目治理哲学
 
-> The short English landing page for non-Chinese readers who arrive via the Karpathy LLM Wiki discussion. The full long-form essay (《实现人的四个未来化之知识 memo 化》) is in Chinese and linked from the main README once published.
-
----
-
-## The core thesis
-
-> **Knowledge without a person is not even information — it has no real relationship with a user.**
-
-Personal knowledge management is not a tool problem. It's a discipline problem: how you read, how you think, how you decide what's worth remembering. A better tool cannot do that for you.
-
-Knowledge MEMO is built on two beliefs that follow from this thesis:
-
-1. **Toolkit, not idea file.** A repo should give you something that runs, not a blog post that hand-waves.
-2. **Human must stay in the loop.** Not as a fallback, but as the whole point.
-
-Everything else in this repo — the SCHEMA, the 6 skills, the dual-proposal mechanism in `/note`, the Retain step with FSRS-6 — is downstream of those two commitments.
+> 这套系统背后的设计信念。理解这些，才能理解为什么每个 Skill 的行为是现在这个样子。
 
 ---
 
-## Two myths to abandon before you fork this
+## 核心论点
 
-### Myth 1: There exists a one-size-fits-all knowledge management solution.
+> **AI 应该做项目的"执行引擎"，而不是"决策者"。**
 
-There doesn't. Notion, Roam, Logseq, Heptabase, Obsidian, Reflect, Tana, Mem, Capacities — how many have you tried? Each one you started with hope and slowly abandoned. The issue isn't that the tools are bad. It's that personal knowledge management isn't a "tool problem" at all.
+项目管理不是信息管理问题，是判断力问题：一个里程碑延期了，要不要调下游？客户提出范围外需求，是走变更还是人情消化？预算偏差 5%，现在动手还是再观察一周？
 
-It's a problem about **how you think, how you read, how you talk to yourself**. Tools are scaffolding. They can hold the shape of your thinking, but they can't do the thinking for you.
+这些问题没有标准答案。它们依赖于你对客户关系的感知、对团队能力的判断、对风险的直觉。AI 可以帮你扫描数据、计算偏差、生成选项——但它不能替你拍板。
 
-So when you fork this repo, don't come looking for "the right template". Come looking for a working example you can measure yours against. The templates in `templates/cards/` are labeled with a "fork-me" disclaimer for exactly this reason.
-
-### Myth 2: Imported solutions can satisfy your needs.
-
-They can't. Including this repo.
-
-Knowledge MEMO is the author's personal system. The demo gallery contains real cards from the author's domains: cognitive neuroscience, investing, consciousness studies, molecular biology. **These are not universal examples.** They're the shape of one person's curiosity.
-
-Gary Tan's gbrain will think about how ideas grow (because he runs a startup accelerator). Our system thinks about how concepts cross-pollinate (because the author does interdisciplinary research). Your system will think about something else entirely — and only you know what that is.
-
-> Please do not use this as-is. Fork it. Rewrite it. Grow your own.
+本系统的所有设计，本质上都在回答一个问题：**如何在 AI 辅助下，让项目经理的判断力不被稀释，同时把机械劳动交给 AI？**
 
 ---
 
-## The Karpathy coincidence, and the two deliberate differences
+## 两个需要打破的幻象
 
-Knowledge MEMO's 3-layer architecture (Schema / Flywheel / Governance) turned out to align almost perfectly with Andrej Karpathy's `llm-wiki.md` gist (Raw Sources / Wiki / Schema + Ingest/Query/Lint operations). The author did not set out to implement Karpathy's idea — the overhaul that produced this structure was already mid-flight when the gist was posted, driven by three concrete vault problems that had been growing for weeks (see [`phase-1-6-story.md`](./phase-1-6-story.md) for the timeline). The alignment is convergent, not derivative.
+### 幻象一：存在一个能自动化项目治理的工具
 
-But there are **two deliberate divergences**, both spelled out below. They're not bug-fixes or style disagreements. They're value choices — and if you disagree with either, you should probably fork this repo hard and remove the relevant pieces.
+不存在。Jira、Teambition、Redmine、飞书项目——你用过多少个？每一个都是"录入数据→生成报表"的变体。它们能告诉你进度是多少，但无法告诉你**接下来该做什么**。
 
-### Philosophy comparison table
+项目治理不是"数据看板"问题，是"在不确定中做决策"的问题。工具可以做三件事：
+1. **记住**：帮你记住所有项目的状态、合同条款、风险登记
+2. **提醒**：告诉你哪些东西逾期了、矛盾了、需要关注了
+3. **建议**：基于数据提出选项
 
-| | **Karpathy LLM Wiki** (as proposed) | **Knowledge MEMO** |
-|---|---|---|
-| Maintenance cost goal | "Trend toward zero" | Knowledge must pass through the brain |
-| LLM's role | Tireless knowledge engineer, compiler | A collaborator — but it cannot read *for* you |
-| Template strategy | Universal idea file | Personal sample, fork required |
-| Closed-loop endpoint | Compiled to wiki | Compiled to wiki **plus retained in your brain** |
+但"决策"这个动作，永远属于你。
 
----
+### 幻象二：导入别人的模版就能管好自己的项目
 
-## The four "intentionally different" points
+不能。包括这套系统。
 
-These are the four places where Knowledge MEMO explicitly diverges from the "maintenance cost trends to zero" direction.
+每个项目经理对风险的敏感度不同，每个公司的合同谈判习惯不同，每个客户的验收标准不同。通用的项目管理模版是"平均的"，而你的项目是"具体的"。
 
-### ① Toolkit, not idea file
-
-Karpathy's gist says: "in the agent era, you share ideas and let other people's agents build them." That's fine for what it is. But this repo exists because the author wanted to *actually hand you something you can install in 30 seconds*, not a prompt you feed to a coding agent and hope it gets right.
-
-**One line of install, complete with SCHEMA.md + 6 skills + card templates + a demo gallery of real cards.** See [`../README.md`](../README.md) for the exact command.
-
-### ② Human must stay in the loop — and this isn't just discipline, it's asset preservation
-
-This is the most important divergence, and it deserves the most space.
-
-Karpathy's framing contains an implicit question he doesn't directly answer: **for whom is the wiki being maintained?**
-
-If the wiki is **context for the agent** — something the agent reads before acting, something the agent treats as its memory — then your accumulation will be wiped out the day the next-generation model ships. Context formats change. Memory mechanisms change. Retrieval patterns change. Today's hard-won wiki is tomorrow's stale data.
-
-If the wiki is **a scaffold for your brain** — a structured path from curiosity to retention — then its value is permanent. The human brain updates its weights *much* more slowly than GPT updates its version number. What you loaded into your head in 2026 is still in your head in 2036.
-
-**This is why Knowledge MEMO enforces "human in the loop"** through three hard disciplines:
-
-- **No automated information flows.** No auto-ingest feeds, no scheduled scraping, no "fill my vault overnight" mode. You must browse, clip, and decide what to read yourself.
-- **`/note` is interactive dual-proposal.** It doesn't auto-create cards. It proposes wikilinks and atomic cards, and the user confirms them. This intentionally adds friction.
-- **Agents cannot independently rewrite the wiki.** All writes to `Cards/` go through `/note`'s dual-proposal channel. There's no API to bypass it.
-
-None of these are performance optimizations. They're value choices. They exist specifically to prevent the repo from drifting toward "agent context accumulator".
-
-> We're not against automation. We're against *accumulation for disposable consumers*.
-
-### ③ Personal template, not universal product
-
-See "Myth 2" above. The `demo/` gallery contains four cards from the author's life. They're there to show you what the system looks like in motion — not to tell you what your cards should look like.
-
-### ④ The fourth operation: Retain
-
-Karpathy lists three operations: Ingest, Query, Lint. All three are "make the wiki better".
-
-But a beautifully compiled wiki you never remember is wasted effort. You'd need to re-derive the insight every time you want it.
-
-Knowledge MEMO adds the fourth step: **Retain**. `/review` uses the FSRS-6 spaced repetition algorithm (the state-of-the-art open-source SRS, same as Anki's new default) to push knowledge from Obsidian into your brain. That's the only version of "knowledge" that doesn't depreciate when GPT-6 ships.
-
-Karpathy didn't write this step, because it violates the "maintenance cost trends to zero" direction — spaced repetition is, by definition, maintenance cost. Only when you commit to "human must stay in the loop" does `Retain` naturally appear as a necessary operation.
+这套系统的价值不在于给你一个"正确的模版"，而在于给你一个**跑通的样本**——你可以看到从线索到收尾的完整流转是什么样的，然后根据你的实际情况去做加减法。
 
 ---
 
-## Why this might still be useful to you
+## 四个核心设计原则
 
-You might agree with none of this and still find the repo useful as a reference:
+### ① 售前→交付：信息无损传递
 
-- **As a working example**: see `phase-1-6-story.md` for how a small knowledge system ran for 6 months, hit scale problems, and was rebuilt.
-- **As a copy-paste starting point**: fork the SCHEMA, change 80% of it, and you're ahead of "start from blank".
-- **As a litmus test**: read this document and notice which of the four points you immediately disagree with. That's where *your* philosophy lives — and that's the first thing worth writing down in *your* version of this repo.
+项目失败最常见的根因之一：售前承诺的东西，交付团队不知道。
 
-Or you might agree, and want the full argument. In that case the Chinese long-form essay《实现人的四个未来化之知识 memo 化》 is the place — it expands sections ② and ④ with case studies, a decade-scale time-horizon argument, and a reframing of "why do you want to learn something in the first place". See the main README for the link once it's published.
+这套系统强制了信息的连续性：
+- 投标阶段的「解决方案.md」中的方案承诺 → 立项时自动提取进项目章程「方案承诺摘要」
+- 售前阶段「客户需求分析.md」中的需求优先级 → 立项时自动提取进「需求基线」
+- 售前识别的风险 → 自动预填充到风险登记册（标注"方案阶段预判"）
+
+**不是"让交付团队去翻投标文档"（他们不会翻），而是让关键信息主动迁移到交付文档中。**
+
+### ② 人拍板，AI 执行
+
+这是整个系统最重要的原则。具体落地为**双提议机制**：
+
+- **提议 1**：新文档关联哪些已有文档？
+- **提议 2**：建议什么后续行动？
+
+每次写入前，AI 必须把这两个问题摊在桌面上，等你逐条确认。这不是性能瓶颈，是**刻意的摩擦**。
+
+原因很简单：AI 建错一个 wikilink，你修复它的时间比 AI 节省的时间多 10 倍。AI 在做"看起来合理"的关联建议时，可能完全理解错了业务上下文。**让 AI 提议、让人确认，比让 AI 静默执行然后人找 bug 要高效得多。**
+
+### ③ 所有关键数据修改必须可追溯
+
+项目数据——预算、工期、合同条款——具有审计价值。修改必须留痕：
+- 什么时候改的
+- 为什么改
+- 改之前是什么 → 改之后是什么
+
+这不是繁文缛节。六个月后在复盘会上被问到"这个里程碑为什么延期了 45 天"的时候，你会感谢这条规则。
+
+### ④ 全生命周期闭环
+
+大多数项目管理工具只覆盖"执行"阶段。但实际上，项目的关键决策大量发生在**立项之前**（这个标要不要投？方案怎么定？报价多少？）和**收尾之后**（这个项目的经验能不能复用到下一个？）。
+
+本系统覆盖完整链条：
+
+```
+线索管理 → 投标决策 → 售前方案迭代 → 需求冻结
+    → 立项 → 合同审查 → 计划制定 → 执行跟踪
+    → 变更管理 → 阶段验收 → 终验 → 回款跟踪 → 决算复盘
+```
+
+每个阶段的产物都自动链接到下一阶段的输入，形成信息飞轮。
 
 ---
 
-## Remember why you started
+## 为什么这可能对你有用
 
-> Do you still remember why you began seeking knowledge in the first place?
->
-> It wasn't so an agent could know things *for* you.
->
-> It was because some questions, you wanted to understand yourself.
-> It was because some things in the world, you wanted to be the person who knew them.
->
-> That impulse is the starting point. Tools are just scaffolding.
+你可能完全不同意以上任何一条，但仍然会发现这套系统有用：
 
-Knowledge MEMO is scaffolding. Fork it and build yours.
+- **作为跑通的参考**：15 个 Skills 覆盖了从售前到收尾的完整链路，你可以看到 AI 辅助项目治理具体长什么样。
+- **作为改写的起点**：fork 之后改 SCHEMA.md、改模板、改掉你不认同的部分——从 80% 开始改比从 0% 开始建要快得多。
+- **作为试金石**：读完这篇哲学之后，注意哪些点你立刻不同意。那些就是你自己的方法论所在——值得你写进你自己的版本里。
+
+或者你同意，那就开始用。从 `/initiate` 建第一个项目开始。
+
+---
+
+> 工具只是脚手架。真正支撑项目的，是你的判断力。
