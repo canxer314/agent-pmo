@@ -93,7 +93,7 @@ obsidian create path="项目库/{project}/03-执行/交付看板.md" content="{k
 更新哪个？输入编号 (REQ-xx / TMP-xx) 或操作:
   "new-req" 新增交付条目
   "new-tmp" 新增轻量临时事项（当天消掉）
-  "new-work" 新增专项工作（跨数天、有明确产出）
+  "new-work" 新增专项工作 → 委托给 /work-item action=new source=standup
   "archive" 归档已完成条目
   "done" 结束
 ```
@@ -173,90 +173,19 @@ TMP done 后不删除，留在临时事项区等归档。
 
 **新增专项工作（new-work）**：
 
-用于跨数天、多步骤、有明确产出的重量级事项。来源可以是站会中发现的新任务（`standup`），也可以是领导/客户临时交待（`adhoc`）。
+> 专项工作的创建、内容更新、完成归档统一由 `/work-item` skill 管理。
+> `/monitor` 仅在看板中维护对应的 TMP 行轻量状态（todo/doing/done 切换）。
+
+用户选择 `new-work` 后，提示：
 
 ```
-新增专项工作:
-  工作标题: 客户年度汇报
-  负责人: 张三
-  截止日期: 06-15
-  产出描述: 年度运维报告 PPT + 汇报演示
-  来源类型 [1=站会发现 2=领导交待 3=客户交待]:
-  来源说明: （如"王主任 5/18 电话要求"）
+→ 专项工作创建请使用 /work-item action=new source=standup
+→ 或直接说"创建专项工作"
 ```
 
-收集完成后：
+随后读取看板并继续当前 track 流程（不中断）。
 
-1. 创建专项工作文档 `项目库/{project}/03-执行/专项工作/YYYY-MM-DD-{标题}.md`：
-
-```markdown
----
-title: "{标题}"
-type: work-item
-project: "{project_id}"
-owner: "{负责人}"
-deadline: YYYY-MM-DD
-output: "{产出描述}"
-source: standup | adhoc
-source_doc: ""
-created: YYYY-MM-DD
-tags:
-  - type/work-item
-  - status/active
----
-
-# {标题}
-
-> 负责人：{负责人} | 截止：{deadline} | 来源：{来源说明}
-
-## 背景
-
-[为什么需要做这件事]
-
-## 产出要求
-
-{产出描述}
-
-## 工作步骤
-
-- [ ] 步骤1
-- [ ] 步骤2
-
-## 备注
-
-[过程中补充]
-
-## 完成记录
-
-[完成后填写：实际产出、耗时、经验]
-```
-
-2. 在看板「临时事项」区创建 TMP 行，链接到工作文档：
-
-```
-TMP-04 [[专项工作/2026-05-18-客户年度汇报|客户年度汇报]] 张三 todo → 06-15
-```
-
-3. 确定性链接：
-   - `[[03-执行/交付看板]]` — 自动关联（同项目固定文件名）
-   - 来源为 `adhoc` 时，`source_doc` 留空（无会议纪要等来源文档）；后续用户可手动补充
-
-4. 双提议：
-
-```markdown
-✓ 确定性链接已自动建立：
-- [[03-执行/交付看板]] — 已自动关联
-
-提议 — 关联建议：
-1. 该专项工作是否与某个里程碑相关？是否需要关联 [[02-计划/里程碑-xxx]]？
-2. 是否需要通知其他相关方？（如涉及跨团队协作）
-{如来源为客户交待}
-3. 是否需要记录到客户档案或下次会议中同步？
-
-请回复编号确认，或"跳过"
-```
-
-专项工作的日常进度更新走 `/monitor action=track` 的 TMP 更新流程（仅更新状态和备注）。完成后由 `/monitor action=track` 的 archive 流程归档。
+专项工作的日常状态切换（todo/doing/done）仍在 `/monitor action=track` 的 TMP 更新流程中处理。专项工作的内容推进（步骤完成、备注补充、截止修改）由 `/work-item action=update` 管理。完成归档由 `/work-item action=close` 管理。
 
 #### 0-TRACK.7: 归档
 
@@ -549,6 +478,8 @@ date: YYYY-MM-DD
 | 健康度差需变更 | `/monitor` → `/change` |
 | 风险升级 | `/monitor` → 更新风险登记册 |
 | 里程碑达成 | `/monitor` → 更新项目章程状态表 |
+| 站会发现专项工作 | `/monitor track` → `/work-item action=new source=standup` |
+| 专项工作日常状态 | `/monitor track` 更新看板 TMP 行 todo/doing/done |
 | 回款跟踪 | `/payment` 扫描合同付款节点 |
 | 售前管道检查 | `/query` 模式9（售前管道健康度） |
 

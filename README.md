@@ -14,7 +14,7 @@
 |---|---|
 | LLM Wiki + 间隔重复 | 项目全生命周期管理 |
 | 个人知识积累 | 售前→投标→合同→执行→回款 |
-| /read /insights /note /review | /prospect /bid /presales /initiate /plan /contract /meeting /change /payment /monitor /close |
+| /read /insights /note /review | /prospect /bid /presales /initiate /plan /contract /meeting /work-item /change /acceptance /payment /monitor /close |
 
 ---
 
@@ -68,7 +68,7 @@ Vault/
 
 ---
 
-## 十四个 Skills
+## 十五个 Skills
 
 ### 生命周期飞轮
 
@@ -85,6 +85,12 @@ Vault/
 | `/acceptance` | 验收管理（阶段验收 + 终验 + 不符合项跟踪）| 验收报告 |
 | `/payment` | 回款跟踪 | 回款汇总 + 催款跟踪 |
 | `/close` | 项目收尾 | 决算 + 复盘 |
+
+### 横向工具
+
+| Skill | 职责 | 输出 |
+|-------|------|------|
+| `/work-item` | 专项工作管理（创建、推进、完成，在看板同步） | 专项工作文档 + 看板 TMP 行 |
 
 ### 治理层
 
@@ -135,10 +141,15 @@ Vault/
     ↓
 ↓ 执行阶段（循环）↓
 /meeting 记录周例会/评审会
-/monitor 定期健康检查
+  ├─ 会议决议 → /work-item action=new source=meeting（创建专项工作）
+/monitor 定期健康检查 + action=track 每日站会
+  ├─ 站会发现 → /work-item action=new source=standup（创建专项工作）
+/work-item action=update 推进工作（步骤完成、备注补充）
 /change 处理变更需求
 /contract action=track 履约跟踪
 /payment 跟踪回款节点
+    ↓
+/work-item action=close 专项工作完成归档
     ↓
 ↓ 验收阶段 ↓
 /acceptance action=stage 里程碑达到，启动阶段验收
@@ -165,14 +176,14 @@ cd knowledge-mgmt
 
 ```bash
 mkdir -p "$HOME/.claude/skills"
-cp -r prospect bid presales initiate plan contract meeting change acceptance monitor payment query lint "$HOME/.claude/skills/"
+cp -r prospect bid presales initiate plan contract meeting change acceptance work-item monitor payment query lint "$HOME/.claude/skills/"
 ```
 
 **Codex**
 
 ```bash
 mkdir -p "$HOME/.agents/skills"
-cp -r prospect bid initiate plan contract meeting change acceptance monitor query lint "$HOME/.agents/skills/"
+cp -r prospect bid initiate plan contract meeting change acceptance work-item monitor query lint "$HOME/.agents/skills/"
 ```
 
 ### 3. 安装 SCHEMA + AGENTS 到 Obsidian Vault
@@ -229,6 +240,8 @@ priority: p0 | p1 | p2 | p3
 | `/plan` 创建里程碑 | 自动在里程碑中链接 `[[00-项目章程]]` |
 | `/meeting` 创建纪要 | 自动链接 `[[00-项目章程]]` |
 | `/change` 创建变更 | 自动链接 `[[预算执行表]]` 和受影响里程碑 |
+| `/work-item` action=new | 自动链接 `[[03-执行/交付看板]]`（在看板同步 TMP 行） |
+| `/work-item` source=meeting | 自动链接 `[[会议纪要-{date}]]`（来源会议） |
 | 线索中标转化 | 自动 move 线索到 `已转化/`，并链接到项目章程 |
 
 ---

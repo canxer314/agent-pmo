@@ -155,8 +155,8 @@ tags:
 
 提议 3 — 专项工作创建：
 1. 决议中是否有需要创建专项工作文档的事项？
-   → 如确认，逐项创建 专项工作/{日期}-{标题}.md，并在交付看板中创建 TMP 行链接到工作文档
-   → 自动关联来源: [[会议纪要-{日期}]] D{N}
+   → 如有，使用 /work-item action=new source=meeting 逐项创建
+   → 会议纪要路径和决议编号将自动传递
 
 请回复编号确认，或"跳过"
 ```
@@ -226,6 +226,7 @@ obsidian append path="项目库/{project}/04-监控/风险登记册.md" content=
 |------|------|
 | 会议产生变更 | `/meeting` → `/change` |
 | 会议识别风险 | `/meeting` → 更新风险登记册 |
+| 决议创建专项工作 | `/meeting` → `/work-item action=new source=meeting` |
 | 跟踪决议项闭环 | `/meeting` → `/monitor` |
 | 启动会后排计划 | `/meeting`（kickoff）→ `/plan` |
 

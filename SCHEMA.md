@@ -1,6 +1,6 @@
 ---
 title: Project Governance Schema
-version: 4.2
+version: 4.3
 tags:
   - type/schema
 updated: 2026-05-18
@@ -27,6 +27,7 @@ updated: 2026-05-18
 | L1 Schema | `SCHEMA.md` + `AGENTS.md` | 人 + AI 共同迭代 | 规则层，定义项目治理规范 |
 | L2 Flywheel | `/prospect` → `/bid` → `/presales` → `/initiate` → `/plan` → `/monitor` | AI 执行，人验证 | 项目生命周期飞轮 |
 | L2 Ops | `/meeting` → `/change` → `/acceptance` → `/payment` → `/close` | AI 执行，人验证 | 项目运营飞轮 |
+| L2 Utility | `/work-item` | AI 执行，人验证 | 专项工作管理（跨生命周期横向工具） |
 | L3 Governance | `/query` + `/lint` | AI 自主扫描 + 人决策 | 项目治理层 |
 | Archive | `线索池/` `投标档案/` `项目库/` `知识库/` | 人拥有，AI 维护 | 结构化项目档案 |
 
@@ -326,9 +327,9 @@ needs-analysis → solution-drafting → solution-communicating
 | 线索中标转化 | 自动 move 线索到 `已转化/`，并链接到项目章程 | 无条件 |
 | 技术答疑沉淀 | 自动链接来源 `[[技术交流记录]]` | 无条件 |
 | 竞品实体化 | 自动链接来源 `[[投标结果]]` | 无条件 |
-| `/meeting` 决议创建专项工作 | 自动在专项工作文档中链接来源 `[[会议纪要-{date}]]` | 用户确认创建后 |
-| `/monitor` track 创建专项工作 | 自动在专项工作文档中链接 `[[03-执行/交付看板]]` | source=standup |
-| 临时交待创建专项工作 | 自动在专项工作文档中链接 `[[03-执行/交付看板]]` | source=adhoc |
+| `/work-item` action=new source=meeting | 自动在专项工作文档中链接来源 `[[会议纪要-{date}]]` | 来源会议已指定 |
+| `/work-item` action=new | 自动在专项工作文档中链接 `[[03-执行/交付看板]]` | 无条件（同项目固定文件名） |
+| `/work-item` action=close | 自动在看板中归档对应 TMP 行 | 无条件 |
 | `/change` 批准后产出新需求 | 自动在看板创建 REQ 条目，来源标记 CR-{N}；CR 中记录产出 REQ 编号 | 变更批准后 |
 
 ### 涟漪更新
@@ -472,6 +473,7 @@ needs-analysis → solution-drafting → solution-communicating
 | 创建变更记录 | AI 执行（/change 流程内） |
 | 创建验收报告（/acceptance） | AI 执行（用户触发后） |
 | 创建合同文档（/contract） | AI 执行（用户触发后） |
+| 创建/更新/完成专项工作文档（/work-item） | AI 执行（用户触发后） |
 | 修改合同条款 | 用户确认（合同数据具有法律审计价值） |
 | 新建文档内加 wikilink | 用户从提议中确认 |
 | 已有文档正文补链 | 用户确认 |
