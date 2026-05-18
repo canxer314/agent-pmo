@@ -352,7 +352,7 @@ obsidian read path="项目库/{project}/00-项目章程.md"
 
 **方案B：更新回款跟踪文档**
 
-读取 `项目库/{project}/04-监控/payment-tracking.md`（如存在），或提示用户创建。
+读取 `项目库/{project}/04-监控/回款跟踪.md`（如存在），或提示用户创建。
 
 #### 6d. 回款跟踪文档格式
 
@@ -395,7 +395,7 @@ tags:
 如用户选择方案B：
 
 ```bash
-obsidian create path="项目库/{project}/04-监控/payment-tracking.md" content="..." overwrite
+obsidian create path="项目库/{project}/04-监控/回款跟踪.md" content="..." overwrite
 ```
 
 #### 6f. 双提议
