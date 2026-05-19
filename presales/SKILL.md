@@ -4,7 +4,7 @@ description: "售前工作台。管理客户需求分析、解决方案迭代、
 invocation: user
 arguments:
   - name: bid
-    description: "关联的投标档案路径（可选）。如不提供，列出现有投标档案供选择。"
+    description: "关联的售前项目路径（可选）。如不提供，列出现有售前项目供选择。"
     required: false
   - name: action
     description: "默认（更新需求分析/解决方案）、'material'（管理材料版本）、'lock'（锁定需求）、'tech-exchange'（记录技术交流）。默认交互式选择。"
@@ -20,14 +20,14 @@ arguments:
 | Skill | 职责 | 输出 |
 |-------|------|------|
 | `/prospect` | 线索管理 | 线索文档 |
-| `/bid` | 投标建档 + 技术方案 + 商务报价 + 投标结果 | 投标档案骨架 |
+| `/bid` | 投标建档 + 技术方案 + 商务报价 + 投标结果 | 售前项目骨架 |
 | `/presales` | **售前工作台 — 需求→方案→材料→交流→冻结** | 需求分析 + 解决方案 + 材料清单 + 技术交流记录 |
 | `/initiate` | 项目立项 | 项目结构 |
 
 **典型工作流**:
 
 ```
-/bid action=new（创建投标档案骨架）
+/bid action=new（创建售前项目骨架）
     ↓
 /presales（首次需求对接 → 更新客户需求分析）
 /presales（方案成形 → 更新解决方案）
@@ -47,7 +47,7 @@ arguments:
 
 | 状态 | 含义 | 触发条件 |
 |------|------|----------|
-| `needs-analysis` | 需求调研中 | `/bid action=new` 创建投标档案后 |
+| `needs-analysis` | 需求调研中 | `/bid action=new` 创建售前项目后 |
 | `solution-drafting` | 方案编写中 | 首次更新 `解决方案.md` 内容后 |
 | `solution-communicating` | 方案已发给客户 | `/presales action=material` 标记材料已发客户后 |
 | `tech-exchange-loop` | 技术交流迭代中 | `/presales action=tech-exchange` 完成后 |
@@ -55,7 +55,7 @@ arguments:
 
 后续状态（`priced` → `submitted` → `won`/`lost`）由 `/bid` 管理。
 
-**推导方法**：每次操作前，读取投标档案中已有文件判断当前状态；操作完成后在双提议中建议下一状态。
+**推导方法**：每次操作前，读取售前项目中已有文件判断当前状态；操作完成后在双提议中建议下一状态。
 
 ---
 
@@ -72,22 +72,22 @@ arguments:
 
 ---
 
-### Step 1: 选择投标档案
+### Step 1: 选择售前项目
 
 如提供 `bid` 参数：
 
 ```bash
-obsidian read path="投标档案/{bid}/客户需求分析.md"
-obsidian read path="投标档案/{bid}/解决方案.md"
+obsidian read path="售前项目/{bid}/客户需求分析.md"
+obsidian read path="售前项目/{bid}/解决方案.md"
 ```
 
 未提供时：
 
 ```bash
-obsidian files folder="投标档案"
+obsidian files folder="售前项目"
 ```
 
-列出活跃投标档案供选择。
+列出活跃售前项目供选择。
 
 ---
 
@@ -243,7 +243,7 @@ section 阶段一
 
 #### 2e. 双提议
 
-读投标档案已有文件，推导当前状态后：
+读售前项目已有文件，推导当前状态后：
 
 ```markdown
 提议 1 — 关联建议：
@@ -265,8 +265,8 @@ section 阶段一
 #### 3a. 读取已有材料
 
 ```bash
-obsidian files folder="投标档案/{bid}/售前材料"
-obsidian read path="投标档案/{bid}/售前材料清单.md"
+obsidian files folder="售前项目/{bid}/售前材料"
+obsidian read path="售前项目/{bid}/售前材料清单.md"
 ```
 
 如售前材料清单不存在，先创建框架。
@@ -341,7 +341,7 @@ tags:
 
 #### 4b. 创建需求冻结确认书
 
-文件路径：`投标档案/{bid}/需求冻结/需求冻结确认书.md`
+文件路径：`售前项目/{bid}/需求冻结/需求冻结确认书.md`
 
 ```markdown
 ---
@@ -402,11 +402,11 @@ tags:
 
 ```bash
 # 更新解决方案状态为"已定稿"
-obsidian read path="投标档案/{bid}/解决方案.md"
+obsidian read path="售前项目/{bid}/解决方案.md"
 # 追加版本记录：v1 已冻结
 
 # 更新客户需求分析 - 标记需求已冻结
-obsidian read path="投标档案/{bid}/客户需求分析.md"
+obsidian read path="售前项目/{bid}/客户需求分析.md"
 ```
 
 #### 4d. 双提议
@@ -433,9 +433,9 @@ obsidian read path="投标档案/{bid}/客户需求分析.md"
 #### 5a. 读取投标上下文
 
 ```bash
-# 读取投标档案上下文
-obsidian read path="投标档案/{bid}/客户需求分析.md"
-obsidian read path="投标档案/{bid}/解决方案.md"
+# 读取售前项目上下文
+obsidian read path="售前项目/{bid}/客户需求分析.md"
+obsidian read path="售前项目/{bid}/解决方案.md"
 ```
 
 收集信息：
@@ -458,7 +458,7 @@ obsidian read path="投标档案/{bid}/解决方案.md"
 
 #### 5b. 技术交流记录模板
 
-文件路径：`投标档案/{bid}/技术交流记录/YYYY-MM-DD.md`
+文件路径：`售前项目/{bid}/技术交流记录/YYYY-MM-DD.md`
 
 ```markdown
 ---
@@ -475,7 +475,7 @@ tags:
 
 # 技术交流记录 — {日期}
 
-> 投标档案：[[投标档案/{bid}]]
+> 售前项目：[[售前项目/{bid}]]
 > 参会人：我方（）、客户（）
 
 ## 交流背景
@@ -547,9 +547,9 @@ tags:
 {如为 PoC} ✓ 确定性链接：PoC 记录已自动链接 [[解决方案]] 和 [[客户需求分析]]
 
 提议 1 — 关联建议：
-1. [[投标档案/{bid}/客户需求分析]] — 如有新增需求更新
-2. [[投标档案/{bid}/解决方案]] — 如有方案调整更新
-3. [[投标档案/{bid}/售前材料清单]] — 材料版本记录
+1. [[售前项目/{bid}/客户需求分析]] — 如有新增需求更新
+2. [[售前项目/{bid}/解决方案]] — 如有方案调整更新
+3. [[售前项目/{bid}/售前材料清单]] — 材料版本记录
 
 提议 2 — 后续行动建议：
 1. 本次交流的客户反馈是否需要更新到「客户需求分析」？
@@ -572,7 +572,7 @@ tags:
 #### 5d. 写入
 
 ```bash
-obsidian create path="投标档案/{bid}/技术交流记录/YYYY-MM-DD.md" content="..."
+obsidian create path="售前项目/{bid}/技术交流记录/YYYY-MM-DD.md" content="..."
 # 模板包含 PoC section 或标准技术交流 section，取决于用户选择
 ```
 
@@ -580,15 +580,15 @@ obsidian create path="投标档案/{bid}/技术交流记录/YYYY-MM-DD.md" conte
 
 ```bash
 # 更新客户需求分析（如有新增）
-obsidian read path="投标档案/{bid}/客户需求分析.md"
+obsidian read path="售前项目/{bid}/客户需求分析.md"
 # 追加新需求
 
 # 更新售前材料清单
-obsidian read path="投标档案/{bid}/售前材料清单.md"
+obsidian read path="售前项目/{bid}/售前材料清单.md"
 # 记录本次材料版本
 
 {如为 PoC 且用户确认} # 更新解决方案（PoC 结果影响）
-obsidian read path="投标档案/{bid}/解决方案.md"
+obsidian read path="售前项目/{bid}/解决方案.md"
 # 追加 PoC 结果到「方案版本记录」或更新「风险与应对」
 ```
 
@@ -596,7 +596,7 @@ obsidian read path="投标档案/{bid}/解决方案.md"
 
 ```bash
 obsidian create path="知识库/技术答疑/{主题}.md" content="..."
-# 自动链接来源技术交流记录 [[投标档案/{bid}/技术交流记录/YYYY-MM-DD]]
+# 自动链接来源技术交流记录 [[售前项目/{bid}/技术交流记录/YYYY-MM-DD]]
 ```
 
 #### 5e. 输出确认
@@ -605,7 +605,7 @@ obsidian create path="知识库/技术答疑/{主题}.md" content="..."
 ---
 技术交流记录已保存：{日期}
 
-📄 文件：投标档案/{bid}/技术交流记录/{日期}.md
+📄 文件：售前项目/{bid}/技术交流记录/{日期}.md
 
 📋 交流主题：
 📋 客户反馈：{N} 项
@@ -630,9 +630,9 @@ obsidian create path="知识库/技术答疑/{主题}.md" content="..."
 
 ## Notes
 
-- `/presales` 依赖 `/bid action=new` 创建的投标档案骨架（文件夹 + 招标要求 + 技术方案 + 商务报价 + 投标结果 + 共享子目录）
-- 售前材料统一存放在 `投标档案/.../售前材料/` 下
+- `/presales` 依赖 `/bid action=new` 创建的售前项目骨架（文件夹 + 招标要求 + 技术方案 + 商务报价 + 投标结果 + 共享子目录）
+- 售前材料统一存放在 `售前项目/.../售前材料/` 下
 - 版本按日期管理，如 `方案汇报-v2-20260508.pptx`
-- 技术交流记录存放在 `投标档案/.../技术交流记录/` 下，由 `action=tech-exchange` 管理
+- 技术交流记录存放在 `售前项目/.../技术交流记录/` 下，由 `action=tech-exchange` 管理
 - 需求锁定是售前到执行的分水岭，锁定后移交 `/bid` 进入商务报价阶段
 - 客户需求分析和解决方案的内容将在 `/initiate` 立项时自动提取为方案承诺摘要和需求基线
