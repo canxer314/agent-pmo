@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(Get-ChildItem *)"
+      "Bash(Get-ChildItem *)",
+      "Bash(git add *)",
+      "Bash(git commit -m '@ *)",
+      "Bash(Select-Object Name)",
+      "Bash(git commit *)",
+      "PowerShell($m = \\(Get-Content \"D:\\\\WorkSpace\\\\knowledge-mgmt\\\\meeting\\\\SKILL.md\" | Measure-Object -Line\\).Lines; $p = \\(Get-Content \"D:\\\\WorkSpace\\\\knowledge-mgmt\\\\presales\\\\SKILL.md\" | Measure-Object -Line\\).Lines; Write-Host \"meeting: $m lines\"; Write-Host \"presales: $p lines\")",
+      "PowerShell(Get-ChildItem -Recurse -File | Where-Object { $_.Extension -match '\\\\.\\(json|yaml|yml|js|ts|py\\)$' } | ForEach-Object { $_.FullName.Replace\\(\"D:\\\\WorkSpace\\\\knowledge-mgmt\\\\\", \"\"\\) })",
+      "Bash(Select-Object -First 100)",
+      "Bash(git *)"
     ]
   }
 }

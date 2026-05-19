@@ -99,7 +99,7 @@ obsidian files folder="线索池/活跃线索"
 
 #### 1b. 创建售前项目结构
 
-创建文件夹：`售前项目/投标-{客户}-{主题}-{日期}/`
+创建文件夹：`售前项目/{客户}-{主题}-{日期}/`
 
 **投标核心文档**（由 `/bid` 创建）：
 
@@ -111,7 +111,7 @@ obsidian files folder="线索池/活跃线索"
 **共享子目录**（由 `/bid` 创建，`/presales` 使用）：
 
 ```
-售前项目/投标-{客户}-{主题}-{日期}/
+售前项目/{客户}-{主题}-{日期}/
 ├── raw/                   ← 客户发来的原始素材
 │   └── .gitkeep
 ├── 售前材料/              ← /presales 使用（我们产出的材料）
@@ -287,19 +287,19 @@ tags:
 #### 1g. 创建子目录
 
 ```bash
-obsidian create path="售前项目/投标-{客户}-{主题}-{日期}/raw/.gitkeep" content=""
-obsidian create path="售前项目/投标-{客户}-{主题}-{日期}/售前材料/.gitkeep" content=""
-obsidian create path="售前项目/投标-{客户}-{主题}-{日期}/技术交流记录/.gitkeep" content=""
-obsidian create path="售前项目/投标-{客户}-{主题}-{日期}/需求冻结/.gitkeep" content=""
+obsidian create path="售前项目/{客户}-{主题}-{日期}/raw/.gitkeep" content=""
+obsidian create path="售前项目/{客户}-{主题}-{日期}/售前材料/.gitkeep" content=""
+obsidian create path="售前项目/{客户}-{主题}-{日期}/技术交流记录/.gitkeep" content=""
+obsidian create path="售前项目/{客户}-{主题}-{日期}/需求冻结/.gitkeep" content=""
 ```
 
 #### 1h. 写入文档
 
 ```bash
-obsidian create path="售前项目/投标-{客户}-{主题}-{日期}/招标要求.md" content="..."
-obsidian create path="售前项目/投标-{客户}-{主题}-{日期}/技术方案.md" content="..."
-obsidian create path="售前项目/投标-{客户}-{主题}-{日期}/商务报价.md" content="..."
-obsidian create path="售前项目/投标-{客户}-{主题}-{日期}/投标结果.md" content="..."
+obsidian create path="售前项目/{客户}-{主题}-{日期}/招标要求.md" content="..."
+obsidian create path="售前项目/{客户}-{主题}-{日期}/技术方案.md" content="..."
+obsidian create path="售前项目/{客户}-{主题}-{日期}/商务报价.md" content="..."
+obsidian create path="售前项目/{客户}-{主题}-{日期}/投标结果.md" content="..."
 ```
 
 #### 1i. 双提议
@@ -345,7 +345,7 @@ obsidian files folder="售前项目"
 #### 2c. 读取并更新
 
 ```bash
-obsidian read path="售前项目/投标-{客户}-{主题}-{日期}/{选择的文档}.md"
+obsidian read path="售前项目/{客户}-{主题}-{日期}/{选择的文档}.md"
 ```
 
 根据用户输入，append 或 overwrite 对应内容。
@@ -388,7 +388,7 @@ obsidian files folder="售前项目"
 #### 3c. 更新投标结果文档
 
 ```bash
-obsidian read path="售前项目/投标-{客户}-{主题}-{日期}/投标结果.md"
+obsidian read path="售前项目/{客户}-{主题}-{日期}/投标结果.md"
 ```
 
 更新 frontmatter 和正文。
