@@ -103,7 +103,7 @@ obsidian files folder="线索池/活跃线索"
 
 **投标核心文档**（由 `/bid` 创建）：
 
-1. `00-项目概览.md` — 售前项目入口笔记（导航枢纽 + 状态追踪）
+1. `项目概览.md` — 售前项目入口笔记（导航枢纽 + 状态追踪）
 2. `招标要求.md`
 3. `技术方案.md`
 4. `商务报价.md`
@@ -113,7 +113,7 @@ obsidian files folder="线索池/活跃线索"
 
 ```
 售前项目/{客户}-{主题}-{日期}/
-├── 00-项目概览.md          ← 售前项目入口笔记
+├── 项目概览.md          ← 售前项目入口笔记
 ├── raw/                   ← 客户发来的原始素材
 │   └── .gitkeep
 ├── 售前材料/              ← /presales 使用（我们产出的材料）
@@ -130,7 +130,7 @@ obsidian files folder="线索池/活跃线索"
 
 > 客户需求分析.md 和 解决方案.md 由 `/presales` 首次操作时创建。
 
-#### 1c. 00-项目概览.md
+#### 1c. 项目概览.md
 
 ```markdown
 ---
@@ -354,7 +354,7 @@ obsidian create path="售前项目/{客户}-{主题}-{日期}/需求冻结/.gitk
 #### 1i. 写入文档
 
 ```bash
-obsidian create path="售前项目/{客户}-{主题}-{日期}/00-项目概览.md" content="..."
+obsidian create path="售前项目/{客户}-{主题}-{日期}/项目概览.md" content="..."
 obsidian create path="售前项目/{客户}-{主题}-{日期}/招标要求.md" content="..."
 obsidian create path="售前项目/{客户}-{主题}-{日期}/技术方案.md" content="..."
 obsidian create path="售前项目/{客户}-{主题}-{日期}/商务报价.md" content="..."

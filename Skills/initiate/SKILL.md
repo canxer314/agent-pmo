@@ -37,7 +37,7 @@ arguments:
 ```bash
 obsidian read path="售前项目/{客户}-{主题}-{日期}/投标结果.md"
 obsidian read path="售前项目/{客户}-{主题}-{日期}/商务报价.md"
-obsidian read path="售前项目/{客户}-{主题}-{日期}/00-项目概览.md"
+obsidian read path="售前项目/{客户}-{主题}-{日期}/项目概览.md"
 obsidian read path="售前项目/{客户}-{主题}-{日期}/招标要求.md"
 obsidian read path="售前项目/{客户}-{主题}-{日期}/解决方案.md"
 obsidian read path="售前项目/{客户}-{主题}-{日期}/客户需求分析.md"
