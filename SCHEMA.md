@@ -49,6 +49,7 @@ Vault/
 │   ├── 已转化/                   # 已升级为售前项目的线索
 │   └── 已关闭/                    # 丢弃的线索
 ├── 售前项目/                     # 售前过程留痕（售前核心 + /presales 售前文档 + 技术交流 + 投标）
+│   ├── 售前看板.md                # 售前管道看板（AI 自主维护）
 │   └── {客户}-{主题}-{日期}/
 │       ├── 招标要求.md
 │       ├── 客户需求分析.md        # 售前：客户痛点、决策链、技术约束
@@ -142,6 +143,7 @@ Vault/
 | `type/retro` | `项目库/{项目}/06-收尾/项目复盘.md` | 项目复盘 | `project`, `retro_date`, `participants` |
 | `type/project-moc` | `MOC-Projects.md` `MOC-Clients.md` | 全局索引 | — |
 | `type/kanban` | `项目库/{项目}/03-执行/交付看板.md` | 交付看板（执行层数据中枢） | `project`, `updated`, `total_active` |
+| `type/presales-kanban` | `售前项目/售前看板.md` | 售前管道看板（所有活跃售前项目状态总览） | `updated`, `total_active` |
 | `type/work-item` | `项目库/{项目}/03-执行/专项工作/` | 专项工作文档（重量级临时事项的工作台） | `project`, `owner`, `deadline`, `output`, `source`（`meeting` / `standup` / `adhoc`）, `source_doc` |
 | `type/task` | — | 看板中的交付条目（REQ-）或临时事项（TMP-），非独立文档 | （嵌入在看板表中，无独立 frontmatter） |
 
@@ -354,6 +356,7 @@ needs-analysis → solution-drafting → solution-communicating
 |------|------|
 | 项目内新建文档（用户已确认的） | AI 执行 |
 | 更新 MOC 索引 | AI 自主 |
+| 更新售前看板 | AI 自主 |
 | 修改已有文档正文 | 列出建议，用户确认 |
 | 跨项目链接（如客户档案更新） | 列出建议，用户确认 |
 
@@ -574,7 +577,7 @@ needs-analysis → solution-drafting → solution-communicating
 
 **人拍板，AI 建议。**
 
-- AI 可以自主做的：MOC 更新、项目章程状态表更新、Lint 报告生成、确定性链接建立
+- AI 可以自主做的：MOC 更新、售前看板更新、项目章程状态表更新、Lint 报告生成、确定性链接建立
 - AI 必须提议等确认的：wikilink 建链、跨项目链接、已有文档修改、变更影响评估
 - 用户不需要看懂代码也能判断：所有提议用自然语言列出
 
