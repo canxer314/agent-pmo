@@ -1,4 +1,4 @@
-# Knowledge MEMO — Project Lifecycle Management System
+# Agent PMO — AI-Driven Project Lifecycle Management System
 
 > **面向售前 + 解决方案 + 项目管理的全生命周期运营系统**
 >

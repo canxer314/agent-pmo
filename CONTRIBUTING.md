@@ -1,8 +1,8 @@
-# Contributing to Knowledge MEMO
+# Contributing to Agent PMO
 
 ## 核心原则：Fork, Don't Consume
 
-Knowledge MEMO 不是一个通用产品。本仓库是针对 **售前 + 解决方案 + 项目管理** 场景定制的项目全生命周期运营系统。
+Agent PMO 不是一个通用产品。本仓库是针对 **售前 + 解决方案 + 项目管理** 场景定制的项目全生命周期运营系统。
 
 我们把它开源，**不是让你当 SaaS 产品用，是让你看到一个真实跑通的样本**，然后去长出**你自己的那一个**。
 
