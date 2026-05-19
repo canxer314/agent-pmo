@@ -84,7 +84,7 @@ arguments:
 #### 1b. 检查客户档案
 
 ```bash
-obsidian search query="客户档案-{client}"
+obsidian search query="客户档案-{客户}"
 ```
 
 - 找到 → 记录客户档案路径，后续双提议时建议关联

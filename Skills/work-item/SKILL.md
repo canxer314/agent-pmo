@@ -137,7 +137,7 @@ AI 根据工作标题和产出描述，分析工作性质，推荐可选 section
 
 #### 1e. 生成文档
 
-文件路径：`项目库/{project}/03-执行/专项工作/{date}-{标题}.md`（date 取当前日期）
+文件路径：`项目库/{project}/03-执行/专项工作/{日期}-{标题}.md`（date 取当前日期）
 
 **文档模板**：核心 section 始终包含。可选 section 按用户确认的结果加入。正文中使用 markdown 注释标记可选 section 的类型，方便 AI 后续更新时识别。
 
@@ -150,7 +150,7 @@ owner: "{负责人}"
 deadline: YYYY-MM-DD
 output: "{产出描述}"
 source: meeting | standup | adhoc
-source_doc: "{如 meeting: 会议纪要-{date}} | 如非 meeting: 空}"
+source_doc: "{如 meeting: 会议纪要-{日期}} | 如非 meeting: 空}"
 created: YYYY-MM-DD
 tags:
   - type/work-item
@@ -273,7 +273,7 @@ tags:
 
 | 日期 | 进展 | 备注 |
 |------|------|------|
-| {date} | 开始 | |
+| {日期} | 开始 | |
 
 <!-- /section:执行日志 -->
 
@@ -311,7 +311,7 @@ obsidian read path="项目库/{project}/03-执行/交付看板.md"
 如看板不存在，先创建（使用看板模板）。然后在临时事项区追加：
 
 ```
-TMP-{next} [[专项工作/{date}-{标题}|{标题}]] {负责人} todo → {deadline}
+TMP-{next} [[专项工作/{日期}-{标题}|{标题}]] {负责人} todo → {deadline}
 ```
 
 更新看板 frontmatter 的 `total_active` 计数。
@@ -321,7 +321,7 @@ TMP-{next} [[专项工作/{date}-{标题}|{标题}]] {负责人} todo → {deadl
 | 链接 | 条件 |
 |------|------|
 | `[[03-执行/交付看板]]` | 无条件（同项目固定文件名） |
-| `[[03-执行/会议纪要/{date}-{type}]]` | `source=meeting` 且来源会议已指定 |
+| `[[03-执行/会议纪要/{日期}-{类型}]]` | `source=meeting` 且来源会议已指定 |
 
 #### 1h. 双提议
 
@@ -347,7 +347,7 @@ TMP-{next} [[专项工作/{date}-{标题}|{标题}]] {负责人} todo → {deadl
 #### 1i. 写入
 
 ```bash
-obsidian create path="项目库/{project}/03-执行/专项工作/{date}-{标题}.md" content="..."
+obsidian create path="项目库/{project}/03-执行/专项工作/{日期}-{标题}.md" content="..."
 obsidian create path="项目库/{project}/03-执行/交付看板.md" content="{updated_kanban}" overwrite
 ```
 
