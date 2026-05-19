@@ -14,8 +14,8 @@
 ### 1. Clone 仓库
 
 ```bash
-git clone https://github.com/canxer314/knowledge-mgmt.git
-cd knowledge-mgmt
+git clone https://github.com/canxer314/agent-pmo.git
+cd agent-pmo
 ```
 
 ### 2. 安装 Skills 到 Claude Code

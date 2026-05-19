@@ -19,7 +19,7 @@ git remote -v
 ```
 
 应包含：
-- `origin` → 你的 fork（`canxer314/knowledge-mgmt`）
+- `origin` → 你的 fork（`canxer314/agent-pmo`）
 - `upstream` → 上游仓库（如尚未添加，见下方）
 
 ### 添加上游 remote（如尚未配置）
