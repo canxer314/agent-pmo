@@ -176,14 +176,14 @@ cd knowledge-mgmt
 
 ```bash
 mkdir -p "$HOME/.claude/skills"
-cp -r prospect bid presales initiate plan contract meeting change acceptance work-item monitor payment query lint "$HOME/.claude/skills/"
+cp -r Skills/prospect Skills/bid Skills/presales Skills/initiate Skills/plan Skills/contract Skills/meeting Skills/change Skills/acceptance Skills/work-item Skills/monitor Skills/payment Skills/query Skills/lint "$HOME/.claude/skills/"
 ```
 
 **Codex**
 
 ```bash
 mkdir -p "$HOME/.agents/skills"
-cp -r prospect bid initiate plan contract meeting change acceptance work-item monitor query lint "$HOME/.agents/skills/"
+cp -r Skills/prospect Skills/bid Skills/initiate Skills/plan Skills/contract Skills/meeting Skills/change Skills/acceptance Skills/work-item Skills/monitor Skills/query Skills/lint "$HOME/.agents/skills/"
 ```
 
 ### 3. 安装 SCHEMA + AGENTS 到 Obsidian Vault

@@ -22,7 +22,7 @@ cd knowledge-mgmt
 
 ```bash
 mkdir -p "$HOME/.claude/skills"
-cp -r prospect bid presales initiate plan contract meeting change acceptance work-item monitor payment query lint "$HOME/.claude/skills/"
+cp -r Skills/prospect Skills/bid Skills/presales Skills/initiate Skills/plan Skills/contract Skills/meeting Skills/change Skills/acceptance Skills/work-item Skills/monitor Skills/payment Skills/query Skills/lint "$HOME/.claude/skills/"
 ```
 
 ### 3. 安装 Schema 和 Agent 规则到 Obsidian Vault

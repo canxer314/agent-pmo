@@ -68,7 +68,7 @@ git merge upstream/main
 上游更新了 Skill 文件后，需要重新复制到 Claude Code 的 skills 目录：
 
 ```bash
-cp -r prospect bid presales initiate plan contract meeting change acceptance work-item monitor payment query lint "$HOME/.claude/skills/"
+cp -r Skills/prospect Skills/bid Skills/presales Skills/initiate Skills/plan Skills/contract Skills/meeting Skills/change Skills/acceptance Skills/work-item Skills/monitor Skills/payment Skills/query Skills/lint "$HOME/.claude/skills/"
 ```
 
 ### 5. 验证同步后的系统健康
@@ -138,5 +138,5 @@ git reset --hard <commit>     # 回退到合并前
 重新安装回退后的 Skills：
 
 ```bash
-cp -r prospect bid presales initiate plan contract meeting change acceptance work-item monitor payment query lint "$HOME/.claude/skills/"
+cp -r Skills/prospect Skills/bid Skills/presales Skills/initiate Skills/plan Skills/contract Skills/meeting Skills/change Skills/acceptance Skills/work-item Skills/monitor Skills/payment Skills/query Skills/lint "$HOME/.claude/skills/"
 ```

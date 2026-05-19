@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+Shell: Git Bash on Windows. Default to POSIX/Bash syntax.
+
+Use PowerShell only for: Registry, WMI, .NET/COM, or Windows-only APIs 
+without POSIX equivalents. Never mix PowerShell into Bash.
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
